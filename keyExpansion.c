@@ -13,15 +13,14 @@ void subWord(int w[4]){
 
     for(int i = 0;i<4;i++){
         /**sprintf(byte,"%x",w[i]);*/
-        x = w[i]&0x0f;/**sscanf("%x",&byte[0]);*/
-        y = w[i]>>4;/**sscanf("%x",&byte[1]);*/
+        y = w[i]&0x0f;/**sscanf("%x",&byte[0]);*/
+        x = w[i]>>4;/**sscanf("%x",&byte[1]);*/
         w[i]=sbox[x][y];
     }
 }
 void keyExpansion(int nb,int nr, int nk,int key[nk*4], int w[nb*(nr+1)][4]){
     int temp[4];
     int i=0;
-    printf("before first while");
     while(i<nk){
         w[i][0]=key[4*i];
         w[i][1]=key[4*i+1];
@@ -29,11 +28,9 @@ void keyExpansion(int nb,int nr, int nk,int key[nk*4], int w[nb*(nr+1)][4]){
         w[i][3]=key[4*i+3];
         i++;
     }
-    printf("got past first while");
     i=nk;
     int rcon;
     while(i<nb*(nr+1)){
-        printf("key expansion round %d",i);
         temp[0]=w[i-1][0];
         temp[1]=w[i-1][1];
         temp[2]=w[i-1][2];
@@ -41,6 +38,10 @@ void keyExpansion(int nb,int nr, int nk,int key[nk*4], int w[nb*(nr+1)][4]){
         if(i%nk==0){
             rotWord(temp);
             subWord(temp);
+            for(int j =0;j<4;j++){
+                printf("%x",temp[j]);
+            }
+            printf("\n");
             rcon = (pow(2,((i/nk)-1)));
             temp[0]=temp[0]^rcon;
         }else if(nk>6&&i%nk==4){
@@ -54,10 +55,16 @@ void keyExpansion(int nb,int nr, int nk,int key[nk*4], int w[nb*(nr+1)][4]){
     }
 }
 int main(void){
-    int key[16] = {0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,0xab,0xf7,0x88,
+    int key[16] = {0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,0xab,0xf7,0x15,0x88,
         0x09,0xcf,0x4f,0x3c};
-    int w[4][4] = {{0x2b,0x7e,0x15,0x16},{0x28,0xae,0xd2,0xa6},{0xab,0xf7,0x15,
-        0x88},{0x09,0xcf,0x4f,0x3c}};
-    keyExpansion(4,4,4,key,w);
+    int w[44][4] = {{0x2b,0x7e,0x15,0x16},{0x28,0xae,0xd2,0xa6},{0xab,0xf7,0x15,
+        0x88},{0x09,0xcf,0x4f,0x3c},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0},{0,0,0,0}};
+    keyExpansion(4,10,4,key,w);
+    /**for(int i = 0;i<44;i++){
+        for(int j =0;j<4;j++){
+            printf("%x",w[i][j]);
+        }
+        printf("\n");
+    }*/
     return 0;
 }
