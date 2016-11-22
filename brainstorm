@@ -1,0 +1,16 @@
+Reqs:
+	Recieves Input
+	Modifies the input
+	Outputs the modified input
+
+Ideas:
+	Hex Converter
+        use var = getchar() inside while loop and reallocate
+            string variable and append to end.
+	
+	AES Encryption tool?
+Stories:
+	As a user I want to be able to enter a hex string and have
+	    the program output the base 10 integer representation of it.
+	As a user I want to be able to enter a base 10 integer
+	    and have the program output the hex string representation of it.
