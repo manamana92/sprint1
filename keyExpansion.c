@@ -35,17 +35,17 @@ void keyExpansion(int nb,int nr, int nk,int key[nk*4], int w[nb*(nr+1)][4]){
         temp[1]=w[i-1][1];
         temp[2]=w[i-1][2];
         temp[3]=w[i-1][3];
-        printf("Round %d\t",i);
         if(i%nk==0){
             rotWord(temp);
             subWord(temp);
             rcon = 1;
             for(int j = 0;j<((i/nk)-1);j++){
-                rcon*=2;
-                rcon=rcon%0x11b;
+                rcon = (rcon<<1);
+                if(rcon>0x00ff){
+                    rcon = rcon ^ 0x011b;
+                }
             }               
             /**rcon = (pow(2,((i/nk)-1)));*/
-            printf("%d    %x\n",(i/nk),rcon);
             temp[0]=temp[0]^rcon;
 
         }else if(nk>6&&i%nk==4){
