@@ -22,6 +22,7 @@ void invSubBytes(int nb,int state[4][nb]);
 void invMixColumns(int nb,int state[4][nb]);
 void invCipher(int nb,int nr,int * in,int * out,int w[nb*(nr+1)][4]);
 int charToBytes(int size,char * arr,int * bytes);
+int bytesToChar(int size,int * bytes,char * arr);
 void fillIn(int size,int offset,int in[size],int * data);
 void xorVector(int size,int vectorPlain[size],int vector[size]);
 int encCBC(int size,int dataSize,int iv[size],int key[size],int * data,int * encData);

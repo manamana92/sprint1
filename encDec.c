@@ -8,9 +8,14 @@ void printData(int size,int * data){
 int charToBytes(int size,char * arr,int * bytes){
     for(int i = 0;i<size;i++){
         bytes[i]=(int)arr[i];
-	printf("%02x\n",bytes[i]);
     }
 
+    return 0;
+}
+int bytesToChar(int size,int * bytes,char * arr){
+    for(int i = 0;i<size;i++){
+        arr[i]=(char)bytes[i];
+    }
     return 0;
 }
 void fillIn(int size,int offset,int in[size],int * data){
@@ -20,9 +25,7 @@ void fillIn(int size,int offset,int in[size],int * data){
 }
 void xorVector(int size,int vectorPlain[size],int vector[size]){
     for(int i = 0;i<size;i++){
-        printf("%d before: %d\t",i,vectorPlain[i]);
         vectorPlain[i]=vectorPlain[i]^vector[i];
-	printf("after: %d\n",vectorPlain[i]);
     }
 }
 int encCBC(int size,int dataSize,int iv[size],int key[size],int * data,int * encData){
@@ -55,10 +58,10 @@ int encCBC(int size,int dataSize,int iv[size],int key[size],int * data,int * enc
     for(int i = 0;i<numBlocks;i++){
         for(int j=0;j<size;j++){
             in[j]=data[(i*size)+j];
-	    printf("%02x\n",in[j]);
         }
+	printf("Block %d",i);
+	printData(size,in);
 	if(i==0){
-	    printData(size,in);
             xorVector(size,in,iv);
         }else{
             xorVector(size,in,out);
@@ -72,6 +75,55 @@ int encCBC(int size,int dataSize,int iv[size],int key[size],int * data,int * enc
     }
     return 0;
 }
+int decCBC(int size,int dataSize,int iv[size],int key[size],int * encData, int * data){
+    int numBlocks=dataSize/size;
+    int in[size];
+    int out[size];
+    int lastIn[size];
+    int nb=4,nr,nk;
+    switch(size){
+        case 16:
+            nr = 10;
+            nk = 4;
+            break;
+        case 24:
+            nr = 12;
+            nk = 6;
+            break;
+        case 32:
+            nr = 14;
+            nk = 8;
+            break;
+        default:
+            return 1;
+    }
+    int keySchedule[nb*(nr+1)][4];
+    keyExpansion(nb,nr,nk,key,keySchedule);
+
+    for(int i = 0;i<numBlocks;i++){
+        for(int j = 0;j<size;j++){
+            in[j]=encData[(i*size)+j];
+        }
+        invCipher(nb,nr,in,out,keySchedule);
+
+	if(i==0){
+            xorVector(size,out,iv);
+	    for(int k=0;k<size;k++){
+                lastIn[k]=in[k];
+            }
+        }else{
+            xorVector(size,out,lastIn);
+            for(int k=0;k<size;k++){
+                lastIn[k]=in[k];
+            }
+        }
+
+	for(int k = 0;k<size;k++){
+            data[(i*size)+k]=out[k];
+        }
+    }
+    return 0;
+}
 int enc(int mode,int size,int dataSize, int iv[size],int key[size],int * data,int * encData){
     switch(mode){
         case 0:
@@ -82,8 +134,18 @@ int enc(int mode,int size,int dataSize, int iv[size],int key[size],int * data,in
     }
     return 0;
 }
+int dec(int mode,int size,int dataSize,int iv[size],int key[size],int * encData,int * data){
+    switch(mode){
+        case 0:
+            decCBC(size,dataSize,iv,key,encData,data);
+	    break;
+        default:
+            break;
+    }
+    return 0;
+}
 int main(void){
-    char *arr = "Hello World";
+    char *arr = "Hello my name is Chris";
     int sizeOfData = strlen(arr);
     int *data=(int *)malloc(sizeOfData*sizeof(int));
     charToBytes(sizeOfData,arr,data);
@@ -98,6 +160,7 @@ int main(void){
     printf("Size Block: %d, Size Data: %d,Modded Size %d, Padded Size: %d\n",sizeOfBlock,sizeOfData,sizeOfDataModBlock,paddedSize);
     int *encData=(int *)malloc(paddedSize*sizeof(int));
     if(sizeOfDataModBlock!=0){
+    printData(paddedSize,encData);
         data = (int *)realloc(data,paddedSize*sizeof(int));
 	data[sizeOfData]=0x80;
         for(int i = sizeOfData+1;i<paddedSize;i++){
@@ -106,7 +169,22 @@ int main(void){
     }
     enc(0,16,paddedSize,iv,key,data,encData);
 
-    printData(paddedSize,encData);
+    int *postDec=(int *)malloc(paddedSize*sizeof(int));
+
+    dec(0,16,paddedSize,iv,key,encData,postDec);
+    printf("After Decryption\n");
+    printData(paddedSize,postDec);
+    int lastByte = paddedSize-1;
+    while(postDec[lastByte]!=0x80&&lastByte>0){
+        lastByte--;
+    }
+    printf("\n%02x\n",postDec[lastByte]);
+
+    postDec=(int *)realloc(postDec,(lastByte+1)*sizeof(int));
+    char *postArr=malloc((lastByte+1)*sizeof(char));
+    bytesToChar(lastByte,postDec,postArr);
+    postArr[lastByte]='\0';
+    puts(postArr);
     /**free(arr);*/
     free(data);
     
