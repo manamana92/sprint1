@@ -146,7 +146,7 @@ void cipher(int nb,int nr,int * in,int * out,int w[nb*(nr+1)][4]){
 }
 /**Inverse Cipher Functions*/
 void invShiftRows(int nb,int state[4][nb]){
-    int temp[nb];
+    int *temp=(int *)malloc(nb*sizeof(int));
     for(int j = 1;j<4;j++){
         for(int k = 0;k<nb;k++){
             temp[(k+j)%nb]=state[j][k];
@@ -155,6 +155,7 @@ void invShiftRows(int nb,int state[4][nb]){
             state[j][l]=temp[l];
         }
     }
+    free(temp);
 }
 void invSubBytes(int nb,int state[4][nb]){
     int x,y;

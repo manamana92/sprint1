@@ -32,8 +32,17 @@ int encCBC(int size,int dataSize,int iv[size],int key[size],int * data,int * enc
     int numBlocks = dataSize/size;
     int in[size];
     int out[size];
-    /**int encData[totalSize];*/
     int nb=4,nr,nk;
+
+    /**Data Padding 80 00 ...*/
+    int dataSizeModBlock=(dataSize+1)%size;
+    int paddedSize=dataSize+(size-dataSizeModBlock)+1;
+    data=(int *)realloc(data,paddedSize*sizeof(int));
+    data[dataSize]=0x80;
+    encData=(int *)realloc(encData,paddedSize*sizeof(int));
+    for(int i = dataSize+1;i<paddedSize;i++){
+        data[i]=0;
+    }
     switch(size){
         case 16:
             nr = 10;
@@ -122,6 +131,13 @@ int decCBC(int size,int dataSize,int iv[size],int key[size],int * encData, int *
             data[(i*size)+k]=out[k];
         }
     }
+
+    /**Handle Padding 80 00 00 ...*/
+    int lastByte = sizeof(data)/sizeof(int)-1;
+    while(data[lastByte]!=0x80&&lastByte>0){
+        lastByte--;
+    }
+    data=(int *)realloc(data,(lastByte+1)*sizeof(int));
     return 0;
 }
 int enc(int mode,int size,int dataSize, int iv[size],int key[size],int * data,int * encData){
@@ -154,7 +170,7 @@ int main(void){
 
     int sizeOfBlock=16;
 
-    int sizeOfDataModBlock = sizeOfData%sizeOfBlock;
+    /**int sizeOfDataModBlock = sizeOfData%sizeOfBlock;
     int paddedSize = sizeOfData+(sizeOfBlock-sizeOfDataModBlock);
 
     printf("Size Block: %d, Size Data: %d,Modded Size %d, Padded Size: %d\n",sizeOfBlock,sizeOfData,sizeOfDataModBlock,paddedSize);
@@ -166,24 +182,25 @@ int main(void){
         for(int i = sizeOfData+1;i<paddedSize;i++){
             data[i]=0;
         }
-    }
-    enc(0,16,paddedSize,iv,key,data,encData);
-
-    int *postDec=(int *)malloc(paddedSize*sizeof(int));
-
-    dec(0,16,paddedSize,iv,key,encData,postDec);
+    }*/
+    int *encData=(int *)malloc(sizeOfData*sizeof(int));
+    enc(0,sizeOfBlock,sizeOfData,iv,key,data,encData);
+    int *postDec=(int *)malloc(sizeof(encData));
+    int sizeOfEnc=sizeof(encData)/sizeof(int);
+    dec(0,sizeOfBlock,sizeOfEnc,iv,key,encData,postDec);
     printf("After Decryption\n");
-    printData(paddedSize,postDec);
-    int lastByte = paddedSize-1;
+    printData(sizeof(postDec)/sizeof(int),postDec);
+    /**int lastByte = paddedSize-1;
     while(postDec[lastByte]!=0x80&&lastByte>0){
         lastByte--;
     }
     printf("\n%02x\n",postDec[lastByte]);
 
-    postDec=(int *)realloc(postDec,(lastByte+1)*sizeof(int));
-    char *postArr=malloc((lastByte+1)*sizeof(char));
-    bytesToChar(lastByte,postDec,postArr);
-    postArr[lastByte]='\0';
+    postDec=(int *)realloc(postDec,(lastByte+1)*sizeof(int));*/
+    int sizeOut = sizeof(*postDec)/sizeof(int);
+    char *postArr=malloc((sizeOut)*sizeof(char));
+    bytesToChar(sizeOut,postDec,postArr);
+    postArr[sizeOut-1]='\0';
     puts(postArr);
     /**free(arr);*/
     free(data);
