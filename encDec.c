@@ -29,7 +29,6 @@ void xorVector(int size,int vectorPlain[size],int vector[size]){
     }
 }
 int encCBC(int size,int dataSize,int iv[size],int key[size],int * data,int * encData){
-    int numBlocks = dataSize/size;
     int in[size];
     int out[size];
     int nb=4,nr,nk;
@@ -37,6 +36,8 @@ int encCBC(int size,int dataSize,int iv[size],int key[size],int * data,int * enc
     /**Data Padding 80 00 ...*/
     int dataSizeModBlock=(dataSize+1)%size;
     int paddedSize=dataSize+(size-dataSizeModBlock)+1;
+    int numBlocks = paddedSize/size;
+    printf("Data Size: %d, Mod Size: %d, Padded Size: %d",dataSize,dataSizeModBlock,paddedSize);
     data=(int *)realloc(data,paddedSize*sizeof(int));
     data[dataSize]=0x80;
     encData=(int *)realloc(encData,paddedSize*sizeof(int));
@@ -82,7 +83,7 @@ int encCBC(int size,int dataSize,int iv[size],int key[size],int * data,int * enc
         }
 
     }
-    return 0;
+    return paddedSize;
 }
 int decCBC(int size,int dataSize,int iv[size],int key[size],int * encData, int * data){
     int numBlocks=dataSize/size;
@@ -131,34 +132,38 @@ int decCBC(int size,int dataSize,int iv[size],int key[size],int * encData, int *
             data[(i*size)+k]=out[k];
         }
     }
-
+    printData(dataSize,data);
     /**Handle Padding 80 00 00 ...*/
-    int lastByte = sizeof(data)/sizeof(int)-1;
+    int lastByte = dataSize-1;
     while(data[lastByte]!=0x80&&lastByte>0){
         lastByte--;
     }
     data=(int *)realloc(data,(lastByte+1)*sizeof(int));
-    return 0;
+    return lastByte+1;
 }
 int enc(int mode,int size,int dataSize, int iv[size],int key[size],int * data,int * encData){
+    int retVal = 0;
     switch(mode){
         case 0:
-            encCBC(size,dataSize,iv,key,data,encData);
+            retVal = encCBC(size,dataSize,iv,key,data,encData);
+            printf("Outside Size: %d\n",retVal);
             break;
         default:
 	    break;
     }
-    return 0;
+    return retVal;
 }
 int dec(int mode,int size,int dataSize,int iv[size],int key[size],int * encData,int * data){
+    int retVal = 0;
     switch(mode){
         case 0:
-            decCBC(size,dataSize,iv,key,encData,data);
+            retVal = decCBC(size,dataSize,iv,key,encData,data);
+            printf("Outside Size: %d\n",dataSize);
 	    break;
         default:
             break;
     }
-    return 0;
+    return retVal;
 }
 int main(void){
     char *arr = "Hello my name is Chris";
@@ -184,12 +189,11 @@ int main(void){
         }
     }*/
     int *encData=(int *)malloc(sizeOfData*sizeof(int));
-    enc(0,sizeOfBlock,sizeOfData,iv,key,data,encData);
-    int *postDec=(int *)malloc(sizeof(encData));
-    int sizeOfEnc=sizeof(encData)/sizeof(int);
-    dec(0,sizeOfBlock,sizeOfEnc,iv,key,encData,postDec);
-    printf("After Decryption\n");
-    printData(sizeof(postDec)/sizeof(int),postDec);
+    int paddedSize = enc(0,sizeOfBlock,sizeOfData,iv,key,data,encData);
+    printData(paddedSize,encData);
+    int *postDec=(int *)malloc(paddedSize*sizeof(int));
+        
+    int postSize = dec(0,sizeOfBlock,paddedSize,iv,key,encData,postDec);
     /**int lastByte = paddedSize-1;
     while(postDec[lastByte]!=0x80&&lastByte>0){
         lastByte--;
@@ -197,12 +201,13 @@ int main(void){
     printf("\n%02x\n",postDec[lastByte]);
 
     postDec=(int *)realloc(postDec,(lastByte+1)*sizeof(int));*/
-    int sizeOut = sizeof(*postDec)/sizeof(int);
-    char *postArr=malloc((sizeOut)*sizeof(char));
-    bytesToChar(sizeOut,postDec,postArr);
-    postArr[sizeOut-1]='\0';
+    /**int sizeOut = sizeof(*postDec)/sizeof(int);*/
+    char *postArr=malloc((postSize)*sizeof(char));
+    bytesToChar(postSize,postDec,postArr);
+    postArr[postSize-1]='\0';
+    printf("Size of char arr %d\n",postSize);
     puts(postArr);
     /**free(arr);*/
-    free(data);
+    /**free(data);*/
     
 }
