@@ -189,27 +189,27 @@ void invCipher(int nb,int nr,int * in,int * out,int w[nb*(nr+1)][4]){
     addRoundKey(nr,nb,nr,state,w);
 
     for(int round = nr-1;round>0;round--){
-//        printf("Start Round %d\n",nr-round);
-//	printStateVector(nb,state);
+/**        printf("Start Round %d\n",nr-round);
+	printStateVector(nb,state);*/
         invShiftRows(nb,state);
-//	printf("After Shift Rows, Round %d\n",nr-round);
-//	printStateVector(nb,state);
+/**	printf("After Shift Rows, Round %d\n",nr-round);
+	printStateVector(nb,state);*/
 	invSubBytes(nb,state);
-//        printf("After Sub Bytes, Round %d\n",nr-round);
-//	printStateVector(nb,state);
+/**        printf("After Sub Bytes, Round %d\n",nr-round);
+	printStateVector(nb,state);*/
 
 	addRoundKey(nr,nb,round,state,w);
-//	printf("After Add Round, Round %d\n",nr-round);
-//	printStateVector(nb,state);
+/**	printf("After Add Round, Round %d\n",nr-round);
+	printStateVector(nb,state);*/
 	invMixColumns(nb,state);
     }
 
     invShiftRows(nb,state);
-//    printf("After Shift Rows, Round %d\n",nr);
-//    printStateVector(nb,state);
+/**    printf("After Shift Rows, Round %d\n",nr);
+    printStateVector(nb,state);*/
     invSubBytes(nb,state);
-//    printf("After Sub Bytes, Round %d\n",nr);
-//    printStateVector(nb,state);
+/**    printf("After Sub Bytes, Round %d\n",nr);
+    printStateVector(nb,state);*/
     addRoundKey(nr,nb,0,state,w);
 
     stateToOut(nb,state,out);

@@ -208,6 +208,6 @@ int main(void){
     printf("Size of char arr %d\n",postSize);
     puts(postArr);
     /**free(arr);*/
-    /**free(data);*/
+    free(data);
     
 }
