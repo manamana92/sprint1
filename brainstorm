@@ -11,14 +11,15 @@ Ideas:
 	AES Encryption tool?
 	    
 Stories:
-	As a user, I should be able to make UI Cipher Selctions and entries
-	, input plaintext, and recieve cyphertext.
+	As a user, I should be able to make UI Cipher Selctions and entries, input plaintext, and recieve cyphertext.
 
-	As a user I should be able to select the Chaining mode.
+	(REMOVED) As a user I should be able to select the Chaining mode.
 
-	As a user I should be able to provide a 128 bit key (in hex string),
-	and have the program successfully perform a key expansion for use in
-	the AES algorithm
+	(REMOVED) As a user I should be able to provide a 128 bit key (in hex string), and have the program successfully perform a key expansion for use in the AES algorithm
+
+    As a user, I should be able to select AES key size and have the keyExpansion successfully compute a key schedule for use in the cipher.
+
+    As a user I should be able to enter a message and be returned an encrypted version of the message.
 
 Tasks:
 	Build an AES engine

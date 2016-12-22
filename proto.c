@@ -1,16 +1,18 @@
 #include "sprint1.h"
 int main(void){
-    int c[] = {0x48,0x65,0x6c,0x6c,0x6f};
-    char x[6];
-    for(int i = 0;i<6;i++){
-        x[i]=(char)c[i];
+    int *userKey;//=malloc(sizeof(int));
+    int userKeyIterator = 0;
+    int iBuff=0;
+
+    printf("Please enter key");
+    while(scanf("%02x",iBuff)>0){
+        userKey=(int *)realloc(userKey,(userKeyIterator++)*sizeof(int));
+        userKey[userKeyIterator-1]=iBuff;
     }
-    x[6]='\0';
-    printf("C\n");
-    for(int j = 0;j<6;j++){
-        printf("%d ",c[j]);
+    for(int i=0;i<userKeyIterator;i++){
+        printf("%02x ",userKey[i]);
     }
-    printf("\nX\n");
-    printf("%s",x);
+    printf("\n");
+    free(userKey);
     return 0;
 }

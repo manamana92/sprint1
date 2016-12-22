@@ -1,213 +1,229 @@
 #include "sprint1.h"
-void printData(int size,int * data){
-    for(int i = 0;i<size;i++){
-        printf("%02x ",data[i]);
+void PrintData(int iSize,int iOffset,int * piData){
+    for(int iIterator = 0;iIterator<iSize;iIterator++){
+        printf("%02x ",piData[iOffset+iIterator]);
     }
     printf("\n");
 }
-int charToBytes(int size,char * arr,int * bytes){
-    for(int i = 0;i<size;i++){
-        bytes[i]=(int)arr[i];
+int CharToBytes(int iSize,char * pchArr,int * piBytes){
+    for(int iIterator = 0;iIterator<iSize;iIterator++){
+        piBytes[iIterator]=(int)pchArr[iIterator];
     }
 
     return 0;
 }
-int bytesToChar(int size,int * bytes,char * arr){
-    for(int i = 0;i<size;i++){
-        arr[i]=(char)bytes[i];
+int BytesToChar(int iSize,int * piBytes,char * pchArr,int iOffset){
+    for(int iIterator = 0;iIterator<iSize;iIterator++){
+        pchArr[iIterator]=(char)piBytes[iOffset+iIterator];
     }
     return 0;
 }
-void fillIn(int size,int offset,int in[size],int * data){
-    for(int i=0;i<size;i++){
-        in[i]=data[offset+i];
+void FillIn(int iSize,int iOffset,int rgiIn[iSize],int * piData){
+    for(int iIterator=0;iIterator<iSize;iIterator++){
+        rgiIn[iIterator]=piData[iOffset+iIterator];
     }
 }
-void xorVector(int size,int vectorPlain[size],int vector[size]){
-    for(int i = 0;i<size;i++){
-        vectorPlain[i]=vectorPlain[i]^vector[i];
+void XorVector(int iSize,int rgiVectorPlain[iSize],int rgiVector[iSize]){
+    for(int iIterator = 0;iIterator<iSize;iIterator++){
+        rgiVectorPlain[iIterator]=rgiVectorPlain[iIterator]^rgiVector[iIterator];
     }
 }
-int encCBC(int size,int dataSize,int iv[size],int key[size],int * data,int * encData){
-    int in[size];
-    int out[size];
-    int nb=4,nr,nk;
+int *EncCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * piData){
+    int iBlockSize = 16;
+    int rgiIn[iBlockSize];
+    int rgiOut[iBlockSize];
+    int iNb=4,iNr,iNk;
 
     /**Data Padding 80 00 ...*/
-    int dataSizeModBlock=(dataSize+1)%size;
-    int paddedSize=dataSize+(size-dataSizeModBlock)+1;
-    int numBlocks = paddedSize/size;
-    printf("Data Size: %d, Mod Size: %d, Padded Size: %d",dataSize,dataSizeModBlock,paddedSize);
-    data=(int *)realloc(data,paddedSize*sizeof(int));
-    data[dataSize]=0x80;
-    encData=(int *)realloc(encData,paddedSize*sizeof(int));
-    for(int i = dataSize+1;i<paddedSize;i++){
-        data[i]=0;
+    int iDataSizeModBlock=(iDataSize+1)%iBlockSize;
+    int iPaddedSize=iDataSize+(iBlockSize-iDataSizeModBlock)+1;
+    int iNumBlocks = iPaddedSize/iBlockSize;
+    /**printf("Data Size: %d, Mod Size: %d, Padded Size: %d",dataSize,iDataSizeModBlock,iPaddedSize);*/
+    piData=(int *)realloc(piData,iPaddedSize*sizeof(int));
+    piData[iDataSize]=0x80;
+    int *piEncData=(int *)malloc((iPaddedSize+1)*sizeof(int));
+    for(int iIterator = iDataSize+1;iIterator<iPaddedSize;iIterator++){
+        piData[iIterator]=0;
     }
-    switch(size){
+    switch(iKeySize){
         case 16:
-            nr = 10;
-            nk = 4;
+            iNr = 10;
+            iNk = 4;
             break;
         case 24:
-            nr = 12;
-            nk = 6;
+            iNr = 12;
+            iNk = 6;
             break;
         case 32:
-            nr = 14;
-            nk = 8;
+            iNr = 14;
+            iNk = 8;
             break;
         default:
-	    return 1;
             break;
     }
-    int keySchedule[nb*(nr+1)][4];
-    keyExpansion(nb,nr,nk,key,keySchedule);
+    int rgrgiKeySchedule[iNb*(iNr+1)][4];
+    KeyExpansion(iNb,iNr,iNk,rgiKey,rgrgiKeySchedule);
 
 
-    for(int i = 0;i<numBlocks;i++){
-        for(int j=0;j<size;j++){
-            in[j]=data[(i*size)+j];
+    for(int iOutIterator = 0;iOutIterator<iNumBlocks;iOutIterator++){
+        for(int iInIterator0=0;iInIterator0<iBlockSize;iInIterator0++){
+            rgiIn[iInIterator0]=piData[(iOutIterator*iBlockSize)+iInIterator0];
         }
-	printf("Block %d",i);
-	printData(size,in);
-	if(i==0){
-            xorVector(size,in,iv);
+        /**printf("Block %d",i);
+        PrintData(iBlockSize,0,rgiIn);*/
+        if(iOutIterator==0){
+            XorVector(iBlockSize,rgiIn,rgiIv);
         }else{
-            xorVector(size,in,out);
+            XorVector(iBlockSize,rgiIn,rgiOut);
         }
-        cipher(nb,nr,in,out,keySchedule);
+        Cipher(iNb,iNr,rgiIn,rgiOut,rgrgiKeySchedule);
 
-	for(int k=0;k<size;k++){
-            encData[(i*size)+k]=out[k];
+        for(int iInIterator1=0;iInIterator1<iBlockSize;iInIterator1++){
+            piEncData[(iOutIterator*iBlockSize)+iInIterator1+1]=rgiOut[iInIterator1];
         }
 
     }
-    return paddedSize;
+    /**PrintData(iPaddedSize,piEncData);*/
+    piEncData[0]=iPaddedSize;
+    free(piData);
+    return piEncData;
 }
-int decCBC(int size,int dataSize,int iv[size],int key[size],int * encData, int * data){
-    int numBlocks=dataSize/size;
-    int in[size];
-    int out[size];
-    int lastIn[size];
-    int nb=4,nr,nk;
-    switch(size){
+int *DecCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * piEncData){
+    int iBlockSize = 16;
+    int iNumBlocks=iDataSize/iBlockSize;
+    int rgiIn[iBlockSize];
+    int rgiOut[iBlockSize];
+    int lastIn[iBlockSize];
+    int iNb=4,iNr,iNk;
+    switch(iKeySize){
         case 16:
-            nr = 10;
-            nk = 4;
+            iNr = 10;
+            iNk = 4;
             break;
         case 24:
-            nr = 12;
-            nk = 6;
+            iNr = 12;
+            iNk = 6;
             break;
         case 32:
-            nr = 14;
-            nk = 8;
+            iNr = 14;
+            iNk = 8;
             break;
         default:
-            return 1;
+            break;
     }
-    int keySchedule[nb*(nr+1)][4];
-    keyExpansion(nb,nr,nk,key,keySchedule);
+    int rgrgiKeySchedule[iNb*(iNr+1)][4];
+    KeyExpansion(iNb,iNr,iNk,rgiKey,rgrgiKeySchedule);
 
-    for(int i = 0;i<numBlocks;i++){
-        for(int j = 0;j<size;j++){
-            in[j]=encData[(i*size)+j];
+    int *piData = malloc((iDataSize+1)*sizeof(int));
+
+    for(int iOutIterator = 0;iOutIterator<iNumBlocks;iOutIterator++){
+        for(int iInIterator0 = 0;iInIterator0<iBlockSize;iInIterator0++){
+            rgiIn[iInIterator0]=piEncData[(iOutIterator*iBlockSize)+iInIterator0];
         }
-        invCipher(nb,nr,in,out,keySchedule);
-
-	if(i==0){
-            xorVector(size,out,iv);
-	    for(int k=0;k<size;k++){
-                lastIn[k]=in[k];
+        InvCipher(iNb,iNr,rgiIn,rgiOut,rgrgiKeySchedule);
+        
+        if(iOutIterator==0){
+            XorVector(iBlockSize,rgiOut,rgiIv);
+            for(int iInIterator1=0;iInIterator1<iBlockSize;iInIterator1++){
+                lastIn[iInIterator1]=rgiIn[iInIterator1];
             }
         }else{
-            xorVector(size,out,lastIn);
-            for(int k=0;k<size;k++){
-                lastIn[k]=in[k];
+            XorVector(iBlockSize,rgiOut,lastIn);
+            for(int iInIterator2=0;iInIterator2<iBlockSize;iInIterator2++){
+                lastIn[iInIterator2]=rgiIn[iInIterator2];
             }
         }
 
-	for(int k = 0;k<size;k++){
-            data[(i*size)+k]=out[k];
+        for(int iInIterator3 = 0;iInIterator3<iBlockSize;iInIterator3++){
+            piData[(iOutIterator*iBlockSize)+iInIterator3+1]=rgiOut[iInIterator3];
         }
     }
-    printData(dataSize,data);
+    PrintData(iDataSize,0,piData);
     /**Handle Padding 80 00 00 ...*/
-    int lastByte = dataSize-1;
-    while(data[lastByte]!=0x80&&lastByte>0){
-        lastByte--;
+    int iLastByte = iDataSize-1;
+    while(piData[iLastByte]!=0x80&&iLastByte>0){
+        iLastByte--;
     }
-    data=(int *)realloc(data,(lastByte+1)*sizeof(int));
-    return lastByte+1;
+    piData=(int *)realloc(piData,(iLastByte+2)*sizeof(int));
+    piData[0]=iLastByte;
+    free(piEncData);
+    return piData;
 }
-int enc(int mode,int size,int dataSize, int iv[size],int key[size],int * data,int * encData){
-    int retVal = 0;
-    switch(mode){
+int *Enc(int iMode,int iKeySize,int iDataSize, int rgiIv[16],int rgiKey[iKeySize],int * piData){
+    int *retVal;
+    switch(iMode){
         case 0:
-            retVal = encCBC(size,dataSize,iv,key,data,encData);
-            printf("Outside Size: %d\n",retVal);
+            retVal = EncCBC(iKeySize,iDataSize,rgiIv,rgiKey,piData);
             break;
         default:
 	    break;
     }
     return retVal;
 }
-int dec(int mode,int size,int dataSize,int iv[size],int key[size],int * encData,int * data){
-    int retVal = 0;
-    switch(mode){
+int *Dec(int iMode,int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * piEncData){
+    int *retVal;
+    switch(iMode){
         case 0:
-            retVal = decCBC(size,dataSize,iv,key,encData,data);
-            printf("Outside Size: %d\n",dataSize);
-	    break;
+            retVal = DecCBC(iKeySize,iDataSize,rgiIv,rgiKey,piEncData);
+            printf("Outside Size: %d\n",iDataSize);
+            break;
         default:
             break;
     }
     return retVal;
 }
-int main(void){
-    char *arr = "Hello my name is Chris";
-    int sizeOfData = strlen(arr);
-    int *data=(int *)malloc(sizeOfData*sizeof(int));
-    charToBytes(sizeOfData,arr,data);
-    int iv[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-    int key[]={0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,0xab,0xf7,0x15,0x88,0x09,0xcf,0x4f,0x3c};
+/**int main(void){
+    char *pchArr = "Hello my name is Chris";
+    int sizeOfData = strlen(pchArr);
+    int *piData=(int *)malloc(sizeOfData*sizeof(int));
+    CharToBytes(sizeOfData,pchArr,piData);
+    int rgiIv[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    int rgiKey[]={0x2b,0x7e,0x15,0x16,0x28,0xae,0xd2,0xa6,0xab,0xf7,0x15,0x88,0x09,0xcf,0x4f,0x3c};
 
     int sizeOfBlock=16;
 
-    /**int sizeOfDataModBlock = sizeOfData%sizeOfBlock;
-    int paddedSize = sizeOfData+(sizeOfBlock-sizeOfDataModBlock);
+    int sizeOfDataModBlock = sizeOfData%sizeOfBlock;
+    int iPaddedSize = sizeOfData+(sizeOfBlock-sizeOfDataModBlock);
 
-    printf("Size Block: %d, Size Data: %d,Modded Size %d, Padded Size: %d\n",sizeOfBlock,sizeOfData,sizeOfDataModBlock,paddedSize);
-    int *encData=(int *)malloc(paddedSize*sizeof(int));
+    printf("Size Block: %d, Size Data: %d,Modded Size %d, Padded Size: %d\n",sizeOfBlock,sizeOfData,sizeOfDataModBlock,iPaddedSize);
+    int *piEncData=(int *)malloc(iPaddedSize*sizeof(int));
     if(sizeOfDataModBlock!=0){
-    printData(paddedSize,encData);
-        data = (int *)realloc(data,paddedSize*sizeof(int));
-	data[sizeOfData]=0x80;
-        for(int i = sizeOfData+1;i<paddedSize;i++){
-            data[i]=0;
+    PrintData(iPaddedSize,piEncData);
+        piData = (int *)realloc(piData,iPaddedSize*sizeof(int));
+	piData[sizeOfData]=0x80;
+        for(int i = sizeOfData+1;i<iPaddedSize;i++){
+            piData[i]=0;
         }
-    }*/
-    int *encData=(int *)malloc(sizeOfData*sizeof(int));
-    int paddedSize = enc(0,sizeOfBlock,sizeOfData,iv,key,data,encData);
-    printData(paddedSize,encData);
-    int *postDec=(int *)malloc(paddedSize*sizeof(int));
-        
-    int postSize = dec(0,sizeOfBlock,paddedSize,iv,key,encData,postDec);
-    /**int lastByte = paddedSize-1;
-    while(postDec[lastByte]!=0x80&&lastByte>0){
-        lastByte--;
     }
-    printf("\n%02x\n",postDec[lastByte]);
+    int *piEncData=(int *)malloc(sizeOfData*sizeof(int));
+    int *outEncData = Enc(0,sizeOfBlock,sizeOfData,rgiIv,rgiKey,piData);
+    int retSize = outEncData[0];
+    printf("Length Enc Data: %d\n",retSize);
+    PrintData(outEncData[0],outEncData);
+    for(int i = 0;i<retSize;i++){
+        outEncData[i]=outEncData[i+1];
+    }
+    outEncData = realloc(outEncData,retSize*sizeof(int));
+    int *postDec= Dec(0,sizeOfBlock,retSize,rgiIv,rgiKey,outEncData);
+    int postSize = postDec[0];
+    int iLastByte = iPaddedSize-1;
+    while(postDec[iLastByte]!=0x80&&iLastByte>0){
+        iLastByte--;
+    }
+    printf("\n%02x\n",postDec[iLastByte]);
 
-    postDec=(int *)realloc(postDec,(lastByte+1)*sizeof(int));*/
-    /**int sizeOut = sizeof(*postDec)/sizeof(int);*/
-    char *postArr=malloc((postSize)*sizeof(char));
-    bytesToChar(postSize,postDec,postArr);
+    postDec=(int *)realloc(postDec,(iLastByte+1)*sizeof(int));
+    int sizeOut = sizeof(*postDec)/sizeof(int);
+    printf("After Dec\n");
+    PrintData(postSize+1,postDec);
+    char *postArr=malloc((postDec[0])*sizeof(char));
+    BytesToChar(postSize,postDec,postArr,1);
     postArr[postSize-1]='\0';
-    printf("Size of char arr %d\n",postSize);
+    printf("Size of char pchArr %d\n",postSize);
+    puts(pchArr);
     puts(postArr);
-    /**free(arr);*/
-    free(data);
-    
-}
+    free(pchArr);
+    free(outEncData);
+    free(postDec);
+    free(postArr);
+}*/
