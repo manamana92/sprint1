@@ -21,6 +21,8 @@ Stories:
 
     As a user I should be able to enter a message and be returned an encrypted version of the message.
 
+    As a user I should be able to decrypt the same message and print the result.
+
 Tasks:
 	Build an AES engine
 		Subtasks:
