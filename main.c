@@ -52,24 +52,23 @@ int main(int argc,char *argv[]){
             PrintData(iKeySize,0,piKey);
             printf("IV: ");
             PrintData(16,0,rgiIv);
-            /**printf("Decrypt Result? (y/n)\n");
+            printf("Decrypt Result? (y/n)\n");
             char c = getchar();
-    
+ 
             if(c=='y'||c=='Y'){
                 for(int i =0;i<iRetSize;i++){
                     piOutEncData[i]=piOutEncData[i+1];
                 }
 
-                int *pPostDec=dec(0,iKeySize,iRetSize,rgiIv,piKey,piOutEncData);
-                int iPostDecSize=pPostDec[0];
-                char *pDecString=malloc((iPostDecSize)*sizeof(char));
-                bytesToChar(iPostDecSize,pPostDec,pDecString,1);
-                pDecString[iPostDecSize-1]='\0';
-                puts(pDecString);
-                free(pPostDec);
-                free(pDecString);
-            }*/
-            free(piOutEncData);
+                int *piPostDec=Dec(0,iKeySize,iRetSize,rgiIv,piKey,piOutEncData);
+                int iPostDecSize=piPostDec[0];
+                char *pchDecString=malloc((iPostDecSize)*sizeof(char));
+                BytesToChar(iPostDecSize,piPostDec,pchDecString,1);
+                pchDecString[iPostDecSize-1]='\0';
+                puts(pchDecString);
+                free(piPostDec);
+                free(pchDecString);
+            }
 
             break;
         default:
