@@ -106,27 +106,388 @@ void StateToOut(int iNb,int rgrgiState[4][iNb],int * piOut);
 /**
   *  @brief Add the round key from Key Schedule to State
   *
+  *  @param iNr The number of rounds. This is
+  *         determined by the size of the key.
   *  @param iNb The number of columns comprising the
   *         State. This is defined by the size of
   *         the key.
+  *  @param round The current round of the cipher or inverse cipher
+  *  @param rgrgiState A 2-D integer array of the State
+  *  @param rgrgiKeySchedule The 2-D integer array of the Key Schedule
+  *
+  *  This is accomplished through 2 for loops. Within the
+  *  for loop it stores the xor operation of the State and the
+  *  key schedule at offset round*iNb.
   */
 void AddRoundKey(int iNr,int iNb,int round,int rgrgiState[4][iNb],int rgrgiKeySchedule[iNb*(iNr+1)][4]);
+/**
+  *  @brief Performs a SubByte operation for each value in the state.
+  *  
+  *  @param iNb The number of columns comprising the
+  *         State. This is defined by the size of
+  *         the key.
+  *  @param rgrgiState A 2-D integer array of the State
+  *
+  *  This is accomplished through 2 for loops. Within
+  *  the for loop, the SubByte operation is performed, and
+  *  the result is stored back in the rgrgiState
+  */
 void SubState(int iNb,int rgrgiState[4][iNb]);
+/**
+  *  @brief Performs a row shift of a 2-D integer array
+  *
+  *  @param iNb The number of columns comprising the
+  *         State. This is defined by the size of
+  *         the key.
+  *  @param rgrgiState A 2-D integer array of the State
+  *
+  *  This is accomplished through 2 for loops. The RotArr
+  *  operation is performed the number of times based on
+  *  the row number
+  */
 void ShiftRows(int iNb,int rgrgiState[4][iNb]);
+/**
+  *  @brief Performs a manipulation of each column
+  *  
+  *  @param iNb The number of columns comprising the
+  *         State. This is defined by the size of
+  *         the key.
+  *  @param rgrgiState A 2-D integer array of the State
+  *
+  *  This is performed by first copying the State to 2-D
+  *  integer array rgrgiOldState. Then for each column,
+  *  it performs manipulation by multiplying it with the
+  *  matrix below:
+  *   -         -
+  *  |02 03 01 01|
+  *  |01 02 03 01|
+  *  |01 01 02 03|
+  *  |03 01 01 02|
+  *  The result of the manipulation is stored back in
+  *  rgrgiState
+  */
 void MixColumns(int iNb,int rgrgiState[4][iNb]);
+/**
+  *  @brief Simple function to revers the order of
+  *         an integer array
+  *
+  *  @param piArr Pointer to an integer array
+  *  @param iSize size of the integer array piArr
+  *         points to
+  *
+  *  This is accomplished by simply using a for loop
+  *  to go through half of the array using an iterator
+  *  and swap each value with the value at iSize-iterator.
+  */
 void Reverse(int * piArr,int iSize);
+/**
+  *  @brief Performs a multiplication in the finite field
+  *
+  *  @param iX Integer to multiply
+  *  @param iY Integer with which to multiply
+  *
+  *  This is accomplished by first splitting iX into an
+  *  array representing the bit representation of iX. It
+  *  then loops throught this array and performs the
+  *  multiplication operation and returns the value of
+  *  the product.
+  */
 int Mult(int iX,int iY);
+/**
+  *  @brief Function to perform AES encryption
+  *
+  *  @param iNr The number of rounds. This is
+  *         determined by the size of the key.
+  *  @param iNb The number of columns comprising the
+  *         State. This is defined by the size of
+  *         the key.
+  *  @param piIn The pointer to an integer array
+  *         that contains the input plaintext to
+  *         be encrypted.
+  *
+  *  @param piOut The pointer to an integer array
+  *         to store the ciphertext.
+  *  @param rgrgiKeySchedule The Key Schedule returned
+  *         from the KeyExpansion function.
+  *
+  *  The Cipher operation is performed as follows:
+  *  1. Copy contents from piIn to a 2-D integer array
+  *     to represent the State known as rgrgiState
+  *  2. Perform AddRoundKey operation on round 0
+  *  3. For each round up to but not including iNr
+  *     perform the following:
+  *         SubState, ShiftRows, and MixColumns
+  *         operations on rgrgiState
+  *         Then perform AddRoundKey operation
+  *         on specific round
+  *  4. Perform SubState and ShiftRows on rgrgiState
+  *  5. Perform AddRoundKey operation on round iNr.
+  *  6. Copy contetnst from rgrgiState to piOut.
+  */
 void Cipher(int iNb,int iNr,int * piIn,int * piOut,int rgrgiKeySchedule[iNb*(iNr+1)][4]);
+/**
+  *  @brief Perform row shift in opposite direction
+  *         of ShiftRows operation.
+  *
+  *  @param iNb The number of columns comprising the
+  *         State. This is defined by the size of
+  *         the key.
+  *  @param rgrgiState A 2-D integer array of the State
+  *
+  *  This is acomplished by going through each row
+  *  storing the values offset by the row number in
+  *  an integer array pointed to by piTemp. These
+  *  values are then stored back into rgrgiState.
+  */
 void InvShiftRows(int iNb,int rgrgiState[4][iNb]);
+/**
+  *  @brief Performs a byte substitution based on
+  *         InvSbox defined in FIPS 197
+  *  
+  *  @param iNb The number of columns comprising the
+  *         State. This is defined by the size of
+  *         the key.
+  *  @param rgrgiState A 2-D integer array of the State
+  *
+  *  This is accomplished through 2 for loops. Within
+  *  the for loops, each byte represented as 0xXY is
+  *  substituted with InvSbox[X][Y]
+  */  
 void InvSubBytes(int iNb,int rgrgiState[4][iNb]);
+/**
+  *  @brief Performs a manipulation of each column
+  *  
+  *  @param iNb The number of columns comprising the
+  *         State. This is defined by the size of
+  *         the key.
+  *  @param rgrgiState A 2-D integer array of the State
+  *
+  *  This is performed by first copying the State to 2-D
+  *  integer array rgrgiOldState. Then for each column,
+  *  it performs manipulation by multiplying it with the
+  *  matrix below:
+  *   -         -
+  *  |0e 0b 0d 09|
+  *  |09 0e 0b 0d|
+  *  |0d 09 0e 0b|
+  *  |0b 0d 09 0e|
+  *  The result of the manipulation is stored back in
+  *  rgrgiState
+  */
 void InvMixColumns(int iNb,int rgrgiState[4][iNb]);
+/**
+  *  @brief Function to perform AES decryption
+  *
+  *  @param iNr The number of rounds. This is
+  *         determined by the size of the key.
+  *  @param iNb The number of columns comprising the
+  *         State. This is defined by the size of
+  *         the key.
+  *  @param piIn The pointer to an integer array
+  *         that contains the input ciphertext to
+  *         be encrypted.
+  *
+  *  @param piOut The pointer to an integer array
+  *         to store the plaintext.
+  *  @param rgrgiKeySchedule The Key Schedule returned
+  *         from the KeyExpansion function.
+  *
+  *  The Cipher operation is performed as follows:
+  *  1. Copy contents from piIn to a 2-D integer array
+  *     to represent the State known as rgrgiState
+  *  2. Perform AddRoundKey operation on round iNr
+  *  3. For each round from iNr-1 down to and
+  *     including 1 perform the following:
+  *         InvShiftRows then InvSubBytes
+  *         operations on rgrgiState
+  *         Then perform AddRoundKey operation
+  *         on specific round
+  8         Then InvMixColumns on rgrgiState
+  *  4. Perform InvShiftRows and InvSubBytes on rgrgiState
+  *  5. Perform AddRoundKey operation on round 0.
+  *  6. Copy contetnst from rgrgiState to piOut.
+  */
 void InvCipher(int iNb,int iNr,int * piIn,int * piOut,int rgrgiKeySchedule[iNb*(iNr+1)][4]);
+/**
+  *  @brief Simple function to to print an integer array
+  *
+  *  @param iSize Size of data to print
+  *  @param iOffset Offset to start printing
+  *  @param piData pointer to integer array to print
+  *
+  *  This is acomplished by a simple for loop and printf
+  *  of the hex representation.
+  */
 void PrintData(int iSize,int iOffset,int * piData);
+/**
+  *  @brief Simple function to convert a char array
+  *         to an integer array
+  *
+  *  @param iSize Number of char to convert to int
+  *  @param pchArr Pointer to char array to convert
+  *  @param piBytes Pointer to intever array to store in
+  *
+  *  This is acomplished by simply iterating through
+  *  both arrays and casting pchArr[iIterator] to int
+  *  and storing in piBytes.
+  */
 int CharToBytes(int iSize,char * pchArr,int * piBytes);
+/**
+  *  @brief Simple function to convert a integer array
+  *         to an char array
+  *
+  *  @param iSize Number of char to convert to int
+  *  @param piBytes Pointer to intever array to convert
+  *  @param pchArr Pointer to char array to store in
+  *  @param iOffset Offset from which to start the
+  *         the conversion.
+  *
+  *  This is acomplished by simply iterating through
+  *  both arrays and casting pchArr[iIterator] to int
+  *  and storing in piBytes.
+  */
 int BytesToChar(int iSize,int * piBytes,char * pchArr,int iOffset);
+/**
+  *  @brief Simple function to fill the input integer array
+  *         from a data vector
+  *
+  *  @param iSize Number of bytes to fill in
+  *  @param iOffset Offset from which grab integers from the
+  *         the data vector
+  *  @param rgiIn Integer array to store data
+  *  @param piData Pointer to integer array from which
+  *         to grab integers
+  *
+  *  This accomplished through a simple for loop and storing
+  *  piData[iOffset+iIterator] in rgiIn[iIterator].
+  */
 void FillIn(int iSize,int iOffset,int rgiIn[iSize],int * piData);
+/**
+  *  @brief Simple function to xor the values of two integer
+  *         arrays
+  *
+  *  @param iSize Number of integers in both arrays to xor
+  *  @param iOffset Offset from which to start xor operations
+  *  @param rgiVectorPlain One integer array to xor. Result is
+  *         stored in this integer array.
+  *  @param rgiVector The other integer array to xor
+  *
+  *  This is acomplished through a simple for loop and store
+  *  the result of xor operation of rgiVectorPlain[iIterator]
+  *  rgiVector[iIterator] in rgiVectorPlain[iIterator].
+  */
 void XorVector(int iSize,int rgiVectorPlain[iSize],int rgiVector[iSize]);
+/**
+  *  @brief Function to perform AES Encryption in CBC mode
+  *         with ISO 7816-4 padding
+  *
+  *  @param iKeySize Key Size in bytes
+  *  @param iDataSize Size of data to encrypt
+  *  @param rgiIv Integer array of the Initialization Vector
+  *  @param rgiKey Integer array of the Key
+  *  @param piData Pointer to an integer array that stores the
+  *         data to encrypt
+  *
+  *  @return Pointer to an integer array named piEncData. Size
+  *          of the encrypted data is stored in piEncData[0].
+  *          Encrypted data is stored starting at piEncData[1].
+  *
+  *  This is acomplished by first calculating the padded size.
+  *  Then realloc is used on piData to change the size to the
+  *  padded size, and then malloc is used to initialize a piEncData,
+  *  a pointer to an integer array to store the encrypted data to
+  *  return. Then piData is padded based on ISO 7816-4.
+  *  Then iNr and iNk are defined based on iKeySize. Next the
+  *  KeyExpansion operation is performed. Then for each data
+  *  block the following is performed:
+  *      piData at offset (block number * block size) is copied
+  *      to rgiIn (input vector).
+  *      Next if the block number is 0, XorVector is performed as
+  *      XorVector(block size,rgiIn,rgiIv).
+  *      Otherwise, XorVector is performed as
+  *      XorVector(block size,rgiIn,rgiOut).
+  *      Next, Cipher operation is performed.
+  *      Then, the integer array pointed to by Cipher is
+  *      copied to piEncData.
+  *  Finally the size of the encrypted data is stored at
+  *  piEncData[0]. Then piData is freed and piEncData is returned.
+  */
 int *EncCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * piData);
+/**
+  *  @brief Function to perform AES Encryption
+  *
+  *  @param iMode Mode of encryption to use
+  *  @param iKeySize Key Size in bytes
+  *  @param iDataSize Size of data to encrypt
+  *  @param rgiIv Integer array of the Initialization Vector
+  *  @param rgiKey Integer array of the Key
+  *  @param piData Pointer to an integer array that stores the
+  *         data to encrypt
+  *
+  *  @return Pointer to an integer array named piEncData. Size
+  *          of the encrypted data is stored in piEncData[0].
+  *          Encrypted data is stored starting at piEncData[1].
+  *
+  *  A switch is used to determine the mode to Encrypt piData,
+  *  and then uses the appropriate encryption function. Then it
+  *  returns the pointer returned by the encryption function.
+  */
 int *Enc(int iMode,int iKeySize,int iDataSize, int rgiIv[16],int rgiKey[iKeySize],int * piData);
+/**
+  *  @brief Function to perform AES Decryption in CBC mode
+  *         with ISO 7816-4 padding
+  *
+  *  @param iKeySize Key Size in bytes
+  *  @param iDataSize Size of data to decrypt
+  *  @param rgiIv Integer array of the Initialization Vector
+  *  @param rgiKey Integer array of the Key
+  *  @param piEncData Pointer to an integer array that stores the
+  *         data to decrypt
+  *
+  *  @return Pointer to an integer array named piData. Size
+  *          of the decrypted data is stored in piData[0].
+  *          Decrypted data is stored starting at piData[1].
+  *  
+  *  First the number of blocks is calculated based on block
+  *  size and iDataSize. Then, the iNr and iNk are defined
+  *  based on iKeySize. Then KeyExpansion is performed. Then
+  *  the return pointer is initialized of size iDataSize+1.
+  *  Then for each data block the following is performed:
+  *      piData at offset (block number * block size) is copied
+  *      to rgiIn (input vector).
+  *      InvCipher operation is performed
+  *      Next, if block number is 0, XorVector is performed as
+  *      XorVector(block size,rgiOut,rgiIv), and rgiIn is copied
+  *      to an integer array rgiLastIn.
+  *      Else, xorVector is performed as XorVector(block size,rgiOut,rgiIn),
+  *      and rgiIn is copied to an integer array rgiLastIn.
+  *      Then, the contents in rgiOut are copied to piData at offset
+  *      (block number * block size).
+  *
+  *  Then the length of the decrypted data stripped of padding
+  *  is calculated, and realloc is used to change the size to
+  *  that stripped of padding. Then the size of the decrypted
+  *  data stripped of padding is stored in piData, and piEncData
+  *  is freed.
+  */
 int *DecCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * piEncData);
+/**
+  *  @brief Function to perform AES Decryption
+  *
+  *  @param iMode Mode of decryption to use
+  *  @param iKeySize Key Size in bytes
+  *  @param iDataSize Size of data to decrypt
+  *  @param rgiIv Integer array of the Initialization Vector
+  *  @param rgiKey Integer array of the Key
+  *  @param piEncData Pointer to an integer array that stores
+  *         the data to decrypt
+  *
+  *  @return Pointer to an integer array named piData. Size
+  *          of the decrypted data is stored in piData[0].
+  *          Decrypted data is stored starting at piData[1].
+  *
+  *  A switch is used to determine the mode to Decrypt piEncData,
+  *  and then uses the appropriate decryption function. Then it
+  *  returns the pointer returned by the decryption function.
+  */
 int *Dec(int iMode,int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * piEncData);

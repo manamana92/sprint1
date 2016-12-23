@@ -29,18 +29,33 @@ void XorVector(int iSize,int rgiVectorPlain[iSize],int rgiVector[iSize]){
     }
 }
 int *EncCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * piData){
+    /**  @var iBlockSize Block size for AES*/
     int iBlockSize = 16;
+    /**  @var  rgiIn Integer array for the input vector*/
     int rgiIn[iBlockSize];
+    /**  @var  rgiOut Integer array for the output vector*/
     int rgiOut[iBlockSize];
+    /**
+      *  @var iNb The number of columns comprising the
+      *       State. This is defined by the size of
+      *       the key.
+      *  @var iNr The number of rounds. This is
+      *       determined by the size of the key.
+      *  @var iNk the number of words in the key.
+      */
     int iNb=4,iNr,iNk;
 
     /**Data Padding 80 00 ...*/
+    /**  @var iDataSizeModBlock Integer to store (iDataSize+1) mod iBlockSize*/
     int iDataSizeModBlock=(iDataSize+1)%iBlockSize;
+    /**  @var iPaddedSize Integer for the padded size*/
     int iPaddedSize=iDataSize+(iBlockSize-iDataSizeModBlock)+1;
+    /**  @var iNumBlocks Integer for the number of blocks*/
     int iNumBlocks = iPaddedSize/iBlockSize;
     /**printf("Data Size: %d, Mod Size: %d, Padded Size: %d",dataSize,iDataSizeModBlock,iPaddedSize);*/
     piData=(int *)realloc(piData,iPaddedSize*sizeof(int));
     piData[iDataSize]=0x80;
+    /**  @var Pointer to integer array for storing Encrypted Data*/
     int *piEncData=(int *)malloc((iPaddedSize+1)*sizeof(int));
     for(int iIterator = iDataSize+1;iIterator<iPaddedSize;iIterator++){
         piData[iIterator]=0;
@@ -61,6 +76,7 @@ int *EncCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * 
         default:
             break;
     }
+    /**  @var rgrgiKeySchedule 2-D integer array for storing Key Schedule*/
     int rgrgiKeySchedule[iNb*(iNr+1)][4];
     KeyExpansion(iNb,iNr,iNk,rgiKey,rgrgiKeySchedule);
 
@@ -89,11 +105,24 @@ int *EncCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * 
     return piEncData;
 }
 int *DecCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * piEncData){
+    /**  @var iBlockSize Block size for AES*/
     int iBlockSize = 16;
+    /**  @var iNumBlocks Integer for the number of blocks*/
     int iNumBlocks=iDataSize/iBlockSize;
+    /**  @var  rgiIn Integer array for the input vector*/
     int rgiIn[iBlockSize];
+    /**  @var  rgiOut Integer array for the output vector*/
     int rgiOut[iBlockSize];
-    int lastIn[iBlockSize];
+    /**  @var  rgiLastIn Integer array for the last input vector*/
+    int rgiLastIn[iBlockSize];
+    /**
+      *  @var iNb The number of columns comprising the
+      *       State. This is defined by the size of
+      *       the key.
+      *  @var iNr The number of rounds. This is
+      *       determined by the size of the key.
+      *  @var iNk the number of words in the key.
+      */
     int iNb=4,iNr,iNk;
     switch(iKeySize){
         case 16:
@@ -111,9 +140,11 @@ int *DecCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * 
         default:
             break;
     }
+    /**  @var rgrgiKeySchedule 2-D integer array for storing Key Schedule*/
     int rgrgiKeySchedule[iNb*(iNr+1)][4];
     KeyExpansion(iNb,iNr,iNk,rgiKey,rgrgiKeySchedule);
 
+    /**  @var Pointer to integer array for storing Decrypted Data*/
     int *piData = malloc((iDataSize+1)*sizeof(int));
 
     for(int iOutIterator = 0;iOutIterator<iNumBlocks;iOutIterator++){
@@ -125,12 +156,12 @@ int *DecCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * 
         if(iOutIterator==0){
             XorVector(iBlockSize,rgiOut,rgiIv);
             for(int iInIterator1=0;iInIterator1<iBlockSize;iInIterator1++){
-                lastIn[iInIterator1]=rgiIn[iInIterator1];
+                rgiLastIn[iInIterator1]=rgiIn[iInIterator1];
             }
         }else{
-            XorVector(iBlockSize,rgiOut,lastIn);
+            XorVector(iBlockSize,rgiOut,rgiLastIn);
             for(int iInIterator2=0;iInIterator2<iBlockSize;iInIterator2++){
-                lastIn[iInIterator2]=rgiIn[iInIterator2];
+                rgiLastIn[iInIterator2]=rgiIn[iInIterator2];
             }
         }
 
@@ -138,8 +169,11 @@ int *DecCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * 
             piData[(iOutIterator*iBlockSize)+iInIterator3+1]=rgiOut[iInIterator3];
         }
     }
-    PrintData(iDataSize,0,piData);
-    /**Handle Padding 80 00 00 ...*/
+    /**PrintData(iDataSize,0,piData);
+    Handle Padding 80 00 00 ...*/
+    /** @var iLastByte Integer for finding the last byte of the
+      *       Decrypted data
+      */
     int iLastByte = iDataSize-1;
     while(piData[iLastByte]!=0x80&&iLastByte>0){
         iLastByte--;
@@ -150,6 +184,9 @@ int *DecCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * 
     return piData;
 }
 int *Enc(int iMode,int iKeySize,int iDataSize, int rgiIv[16],int rgiKey[iKeySize],int * piData){
+    /**  @var retVal Pointer for storing returned value from
+      *       encryption function
+      */
     int *retVal;
     switch(iMode){
         case 0:
@@ -161,6 +198,9 @@ int *Enc(int iMode,int iKeySize,int iDataSize, int rgiIv[16],int rgiKey[iKeySize
     return retVal;
 }
 int *Dec(int iMode,int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * piEncData){
+    /**  @var retVal Pointer for storing returned value from
+      *       encryption function
+      */
     int *retVal;
     switch(iMode){
         case 0:
