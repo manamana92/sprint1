@@ -11,5 +11,11 @@ cipherDebug: cipher.c keyExpansion.c
 debug: main.c encDec.c cipher.c keyExpansion.c
 	$(CC) main.c encDec.c cipher.c keyExpansion.c -g -o sprint1Debug $(CFLAGS)
 
+debugTests: tests.c encDec.c cipher.c keyExpansion.c
+	$(CC) tests.c encDec.c cipher.c keyExpansion.c -g -o testing $(CFLAGS)
+
+tests: tests.c encDec.c cipher.c keyExpansion.c
+	$(CC) tests.c encDec.c cipher.c keyExpansion.c -o testing $(CFLAGS)
+
 clean:
-	rm a.out sprint1 sprint1Debug cipherDebug
+	rm a.out sprint1 sprint1Debug cipherDebug testing

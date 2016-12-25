@@ -110,7 +110,7 @@ int main(int argc,char *argv[]){
 
             break;
         default:
-            printf("Incorrect key size");
+            printf("Incorrect entry for key size. Exiting...\n");
             return 1;
             break;
     }

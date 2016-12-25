@@ -70,7 +70,7 @@ void InToState(int iNb,int * piIn,int rgrgiState[4][iNb]){
     int iVectorIterator = 0;
     for(int iOutIterator = 0;iOutIterator<iNb;iOutIterator++){
         for(int iInIterator = 0;iInIterator<4;iInIterator++){
-            rgrgiState[iInIterator][iOutIterator]=piIn[iVectorIterator++];
+            rgrgiState[iInIterator][iOutIterator]=piIn[iVectorIterator++]&0xff;
         }
     }
 }

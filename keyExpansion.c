@@ -1,11 +1,14 @@
 #include "sprint1.h"
 void RotArr(int iSize,int rgiW[iSize]){
     /**  @var iBuff Integer for use when swapping values for rotation*/
-     int iBuff=rgiW[0];
-     for(int iIterator =1;iIterator<iSize;iIterator++){
-         rgiW[iIterator-1]=rgiW[iIterator];
-     }
-     rgiW[iSize-1]=iBuff;
+    if(iSize<2){
+        return;
+    }
+    int iBuff=rgiW[0];
+    for(int iIterator =1;iIterator<iSize;iIterator++){
+        rgiW[iIterator-1]=rgiW[iIterator];
+    }
+    rgiW[iSize-1]=iBuff;
 }
 int SubByte(int iByte){
     /**
