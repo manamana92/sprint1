@@ -26,18 +26,21 @@ void testNullEnc(void){
     printf("Size of piData %d\nSize of pchString %d\n",iSizeData,iSizeChar);
 }
 void testRotArr(){
-    /**printf("Test case for size greater than size of array\n");
-    int rgiTest[] = {0,1,2,3,4};
+    printf("Test case for size greater than size of array\n");
+    int rgiTest[] = {0x01,0x12,0x23,0x34,0x45};
     RotArr(8,rgiTest);
-    PrintData(5,0,rgiTest);*/
+    PrintData(5,0,rgiTest);
     printf("Null test case\n");
     int *piTest=(int *)malloc(5*sizeof(int));
     PrintData(5,0,piTest);
     RotArr(5,piTest);
     PrintData(5,0,piTest);
+
+    printf("Test size: %d\n",sizeof(piTest)/sizeof(piTest[0]));
     
 }
 int main(void){
+    printf("%d",INT_MIN);
     testNullEnc();
     testRotArr();
     return 0;

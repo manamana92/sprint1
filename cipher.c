@@ -99,11 +99,18 @@ void SubState(int iNb,int rgrgiState[4][iNb]){
     }
 }
 void ShiftRows(int iNb,int rgrgiState[4][iNb]){
+    /**  @var piTemp Pointer to integer array for storing the
+      *       shifted version of the row*/
+    int *piTemp=(int *)malloc(iNb*sizeof(int));
     for(int iOutIterator = 1;iOutIterator<4;iOutIterator++){
-        for(int iInIterator = 0;iInIterator<iOutIterator;iInIterator++){
-            RotArr(iNb,rgrgiState[iOutIterator]);
+        for(int iInIterator0 = 0;iInIterator0<iNb;iInIterator0++){
+            piTemp[(iInIterator0-iOutIterator+iNb)%iNb]=rgrgiState[iOutIterator][iInIterator0];
+        }
+        for(int iInIterator1 = 0;iInIterator1<iNb;iInIterator1++){
+            rgrgiState[iOutIterator][iInIterator1]=piTemp[iInIterator1];
         }
     }
+    free(piTemp);
 }
 void MixColumns(int iNb,int rgrgiState[4][iNb]){
     /**  @var rgrgiOldState 2-D Integer array for storing old State*/
