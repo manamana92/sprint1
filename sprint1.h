@@ -14,14 +14,15 @@
 #include <math.h>
 #include <limits.h>
 #include <time.h>
+#define BLOCKSIZE 16
+#define NB 4
 /**
   *  @brief Rotates the integer range rgiW by
   *         one.
   * 
-  *  @param iSize the size of the range rgiW
   *  @param rgiW the range to rotate by one
   */
-void RotArr(int iSize,int rgiW[iSize]);
+void RotWord(int rgiW[4]);
 /**
   *  @brief Performs a byte substitution in Sbox
   *         as defined in FIPS 197
@@ -51,9 +52,6 @@ void SubWord(int rgiW[4]);
   *  @brief Runs the Key Expansion defined in
   *         FIPS 197
   *  
-  *  @param iNb The number of columns comprising the
-  *         State. This is defined by the size of
-  *         the key.
   *  @param iNr The number of rounds. This is
   *         determined by the size of the key.
   *  @param iNk the number of words in the key.
@@ -62,7 +60,7 @@ void SubWord(int rgiW[4]);
   *  @param rgrgiKeySchedule The 2 dimensional
   *         integer array used to store the result
   *         from the Key Expansion routine. This
-  *         is of size iNb*(iNr+1) words.
+  *         is of size NB*(iNr+1) words.
   *
   *  The Key Expansion routine stores the key in
   *  first iNk words. It then stores the previous
@@ -80,78 +78,60 @@ void SubWord(int rgiW[4]);
   *  Next it stores rgrgiKeySchedule[round-iNk] xor
   *  rgiTemp in rgrgiKeySchedule[round].
   */
-void KeyExpansion(int iNb,int iNr, int iNk,int rgiKey[iNk*4], int rgrgiKeySchedule[iNb*(iNr+1)][4]);
+void KeyExpansion(int iNr, int iNk,int rgiKey[iNk*4], int rgrgiKeySchedule[NB*(iNr+1)][4]);
 /**
   *  @brief Stores a vector in a 2-D integer array
   *
-  *  @param iNb The number of columns comprising the
-  *         State. This is defined by the size of
-  *         the key.
   *  @param piIn The vector to store in the 2-D array
   *  @param rgrgiState The 2-D integer array to store
   *         the vector in.
   */
-void InToState(int iNb,int * piIn,int rgrgiState[4][iNb]);
+void InToState(int * piIn,int rgrgiState[4][NB]);
 /**
   *  @brief Stores a 2-D integer array in a vector
   *
-  *  @param iNb The number of columns comprising the
-  *         State. This is defined by the size of
-  *         the key.
   *  @param rgrgiState The 2-D integer array containing
   *         the State.
   *  @param piOut The vector to store the 2-D array in
   */
-void StateToOut(int iNb,int rgrgiState[4][iNb],int * piOut);
+void StateToOut(int rgrgiState[4][NB],int * piOut);
 /**
   *  @brief Add the round key from Key Schedule to State
   *
   *  @param iNr The number of rounds. This is
   *         determined by the size of the key.
-  *  @param iNb The number of columns comprising the
-  *         State. This is defined by the size of
-  *         the key.
   *  @param round The current round of the cipher or inverse cipher
   *  @param rgrgiState A 2-D integer array of the State
   *  @param rgrgiKeySchedule The 2-D integer array of the Key Schedule
   *
   *  This is accomplished through 2 for loops. Within the
   *  for loop it stores the xor operation of the State and the
-  *  key schedule at offset round*iNb.
+  *  key schedule at offset round*NB.
   */
-void AddRoundKey(int iNr,int iNb,int round,int rgrgiState[4][iNb],int rgrgiKeySchedule[iNb*(iNr+1)][4]);
+void AddRoundKey(int iNr,int round,int rgrgiState[4][NB],int rgrgiKeySchedule[NB*(iNr+1)][4]);
 /**
   *  @brief Performs a SubByte operation for each value in the state.
   *  
-  *  @param iNb The number of columns comprising the
-  *         State. This is defined by the size of
-  *         the key.
   *  @param rgrgiState A 2-D integer array of the State
   *
   *  This is accomplished through 2 for loops. Within
   *  the for loop, the SubByte operation is performed, and
   *  the result is stored back in the rgrgiState
   */
-void SubState(int iNb,int rgrgiState[4][iNb]);
+void SubState(int rgrgiState[4][NB]);
 /**
   *  @brief Performs a row shift of a 2-D integer array
   *
-  *  @param iNb The number of columns comprising the
-  *         State. This is defined by the size of
-  *         the key.
   *  @param rgrgiState A 2-D integer array of the State
   *
   *  This is accomplished through 2 for loops. The RotArr
   *  operation is performed the number of times based on
   *  the row number
   */
-void ShiftRows(int iNb,int rgrgiState[4][iNb]);
+void ShiftRows(int rgrgiState[4][NB]);
 /**
   *  @brief Performs a manipulation of each column
   *  
-  *  @param iNb The number of columns comprising the
-  *         State. This is defined by the size of
-  *         the key.
   *  @param rgrgiState A 2-D integer array of the State
   *
   *  This is performed by first copying the State to 2-D
@@ -166,7 +146,7 @@ void ShiftRows(int iNb,int rgrgiState[4][iNb]);
   *  The result of the manipulation is stored back in
   *  rgrgiState
   */
-void MixColumns(int iNb,int rgrgiState[4][iNb]);
+void MixColumns(int rgrgiState[4][NB]);
 /**
   *  @brief Simple function to revers the order of
   *         an integer array
@@ -198,9 +178,6 @@ int Mult(int iX,int iY);
   *
   *  @param iNr The number of rounds. This is
   *         determined by the size of the key.
-  *  @param iNb The number of columns comprising the
-  *         State. This is defined by the size of
-  *         the key.
   *  @param piIn The pointer to an integer array
   *         that contains the input plaintext to
   *         be encrypted.
@@ -224,14 +201,11 @@ int Mult(int iX,int iY);
   *  5. Perform AddRoundKey operation on round iNr.
   *  6. Copy contetnst from rgrgiState to piOut.
   */
-void Cipher(int iNb,int iNr,int * piIn,int * piOut,int rgrgiKeySchedule[iNb*(iNr+1)][4]);
+void Cipher(int iNr,int * piIn,int * piOut,int rgrgiKeySchedule[NB*(iNr+1)][4]);
 /**
   *  @brief Perform row shift in opposite direction
   *         of ShiftRows operation.
   *
-  *  @param iNb The number of columns comprising the
-  *         State. This is defined by the size of
-  *         the key.
   *  @param rgrgiState A 2-D integer array of the State
   *
   *  This is acomplished by going through each row
@@ -239,27 +213,21 @@ void Cipher(int iNb,int iNr,int * piIn,int * piOut,int rgrgiKeySchedule[iNb*(iNr
   *  an integer array pointed to by piTemp. These
   *  values are then stored back into rgrgiState.
   */
-void InvShiftRows(int iNb,int rgrgiState[4][iNb]);
+void InvShiftRows(int rgrgiState[4][NB]);
 /**
   *  @brief Performs a byte substitution based on
   *         InvSbox defined in FIPS 197
   *  
-  *  @param iNb The number of columns comprising the
-  *         State. This is defined by the size of
-  *         the key.
   *  @param rgrgiState A 2-D integer array of the State
   *
   *  This is accomplished through 2 for loops. Within
   *  the for loops, each byte represented as 0xXY is
   *  substituted with InvSbox[X][Y]
   */  
-void InvSubBytes(int iNb,int rgrgiState[4][iNb]);
+void InvSubBytes(int rgrgiState[4][NB]);
 /**
   *  @brief Performs a manipulation of each column
   *  
-  *  @param iNb The number of columns comprising the
-  *         State. This is defined by the size of
-  *         the key.
   *  @param rgrgiState A 2-D integer array of the State
   *
   *  This is performed by first copying the State to 2-D
@@ -274,15 +242,12 @@ void InvSubBytes(int iNb,int rgrgiState[4][iNb]);
   *  The result of the manipulation is stored back in
   *  rgrgiState
   */
-void InvMixColumns(int iNb,int rgrgiState[4][iNb]);
+void InvMixColumns(int rgrgiState[4][NB]);
 /**
   *  @brief Function to perform AES decryption
   *
   *  @param iNr The number of rounds. This is
   *         determined by the size of the key.
-  *  @param iNb The number of columns comprising the
-  *         State. This is defined by the size of
-  *         the key.
   *  @param piIn The pointer to an integer array
   *         that contains the input ciphertext to
   *         be encrypted.
@@ -307,7 +272,7 @@ void InvMixColumns(int iNb,int rgrgiState[4][iNb]);
   *  5. Perform AddRoundKey operation on round 0.
   *  6. Copy contetnst from rgrgiState to piOut.
   */
-void InvCipher(int iNb,int iNr,int * piIn,int * piOut,int rgrgiKeySchedule[iNb*(iNr+1)][4]);
+void InvCipher(int iNr,int * piIn,int * piOut,int rgrgiKeySchedule[NB*(iNr+1)][4]);
 /**
   *  @brief Simple function to to print an integer array
   *

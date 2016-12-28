@@ -15,7 +15,7 @@ void testNullEnc(void){
     int rgiIv[]={0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     int *piEncData = Enc(0,16,14,rgiIv,key128,piData);
     int iRetSize = piEncData[0];
-    int *pchEncString = (int *)malloc((iRetSize+1)*sizeof(char));
+    char *pchEncString = (char *)malloc((iRetSize+1)*sizeof(char));
     BytesToChar(iRetSize,piEncData,pchEncString,1);
     pchEncString[iRetSize]='\0';
 
@@ -28,20 +28,23 @@ void testNullEnc(void){
 void testRotArr(){
     printf("Test case for size greater than size of array\n");
     int rgiTest[] = {0x01,0x12,0x23,0x34,0x45};
-    RotArr(8,rgiTest);
+    RotWord(rgiTest);
     PrintData(5,0,rgiTest);
     printf("Null test case\n");
     int *piTest=(int *)malloc(5*sizeof(int));
     PrintData(5,0,piTest);
-    RotArr(5,piTest);
+    RotWord(piTest);
     PrintData(5,0,piTest);
 
-    printf("Test size: %d\n",sizeof(piTest)/sizeof(piTest[0]));
     
+}
+void testSubByte(){
+    printf("Original: %x Substituted: %x\n",-5,SubByte(-5));
 }
 int main(void){
     printf("%d",INT_MIN);
-    testNullEnc();
-    testRotArr();
+    //testNullEnc();
+    //testRotArr();
+    testSubByte();
     return 0;
 }

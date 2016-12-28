@@ -1,6 +1,6 @@
 #include "sprint1.h"
 int main(void){
-    int *userKey;//=malloc(sizeof(int));
+    /**int *userKey;//=malloc(sizeof(int));
     int userKeyIterator = 0;
     int iBuff=0;
 
@@ -13,6 +13,8 @@ int main(void){
         printf("%02x ",userKey[i]);
     }
     printf("\n");
-    free(userKey);
+    free(userKey);*/
+    unsigned char chBuff = 0x1ff;
+    printf("%x\n",chBuff);
     return 0;
 }

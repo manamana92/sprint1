@@ -29,29 +29,24 @@ void XorVector(int iSize,int rgiVectorPlain[iSize],int rgiVector[iSize]){
     }
 }
 int *EncCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * piData){
-    /**  @var iBlockSize Block size for AES*/
-    int iBlockSize = 16;
     /**  @var  rgiIn Integer array for the input vector*/
-    int rgiIn[iBlockSize];
+    int rgiIn[BLOCKSIZE];
     /**  @var  rgiOut Integer array for the output vector*/
-    int rgiOut[iBlockSize];
+    int rgiOut[BLOCKSIZE];
     /**
-      *  @var iNb The number of columns comprising the
-      *       State. This is defined by the size of
-      *       the key.
       *  @var iNr The number of rounds. This is
       *       determined by the size of the key.
       *  @var iNk the number of words in the key.
       */
-    int iNb=4,iNr,iNk;
+    int iNr,iNk;
 
     /**Data Padding 80 00 ...*/
-    /**  @var iDataSizeModBlock Integer to store (iDataSize+1) mod iBlockSize*/
-    int iDataSizeModBlock=(iDataSize+1)%iBlockSize;
+    /**  @var iDataSizeModBlock Integer to store (iDataSize+1) mod BLOCKSIZE*/
+    int iDataSizeModBlock=(iDataSize+1)%BLOCKSIZE;
     /**  @var iPaddedSize Integer for the padded size*/
-    int iPaddedSize=iDataSize+(iBlockSize-iDataSizeModBlock)+1;
+    int iPaddedSize=iDataSize+(BLOCKSIZE-iDataSizeModBlock)+1;
     /**  @var iNumBlocks Integer for the number of blocks*/
-    int iNumBlocks = iPaddedSize/iBlockSize;
+    int iNumBlocks = iPaddedSize/BLOCKSIZE;
     /**printf("Data Size: %d, Mod Size: %d, Padded Size: %d",dataSize,iDataSizeModBlock,iPaddedSize);*/
     piData=(int *)realloc(piData,iPaddedSize*sizeof(int));
     piData[iDataSize]=0x80;
@@ -74,28 +69,29 @@ int *EncCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * 
             iNk = 8;
             break;
         default:
+            return NULL;
             break;
     }
     /**  @var rgrgiKeySchedule 2-D integer array for storing Key Schedule*/
-    int rgrgiKeySchedule[iNb*(iNr+1)][4];
-    KeyExpansion(iNb,iNr,iNk,rgiKey,rgrgiKeySchedule);
+    int rgrgiKeySchedule[NB*(iNr+1)][4];
+    KeyExpansion(iNr,iNk,rgiKey,rgrgiKeySchedule);
 
 
     for(int iOutIterator = 0;iOutIterator<iNumBlocks;iOutIterator++){
-        for(int iInIterator0=0;iInIterator0<iBlockSize;iInIterator0++){
-            rgiIn[iInIterator0]=piData[(iOutIterator*iBlockSize)+iInIterator0];
+        for(int iInIterator0=0;iInIterator0<BLOCKSIZE;iInIterator0++){
+            rgiIn[iInIterator0]=piData[(iOutIterator*BLOCKSIZE)+iInIterator0];
         }
         /**printf("Block %d",i);
-        PrintData(iBlockSize,0,rgiIn);*/
+        PrintData(BLOCKSIZE,0,rgiIn);*/
         if(iOutIterator==0){
-            XorVector(iBlockSize,rgiIn,rgiIv);
+            XorVector(BLOCKSIZE,rgiIn,rgiIv);
         }else{
-            XorVector(iBlockSize,rgiIn,rgiOut);
+            XorVector(BLOCKSIZE,rgiIn,rgiOut);
         }
-        Cipher(iNb,iNr,rgiIn,rgiOut,rgrgiKeySchedule);
+        Cipher(iNr,rgiIn,rgiOut,rgrgiKeySchedule);
 
-        for(int iInIterator1=0;iInIterator1<iBlockSize;iInIterator1++){
-            piEncData[(iOutIterator*iBlockSize)+iInIterator1+1]=rgiOut[iInIterator1];
+        for(int iInIterator1=0;iInIterator1<BLOCKSIZE;iInIterator1++){
+            piEncData[(iOutIterator*BLOCKSIZE)+iInIterator1+1]=rgiOut[iInIterator1];
         }
 
     }
@@ -105,25 +101,20 @@ int *EncCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * 
     return piEncData;
 }
 int *DecCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * piEncData){
-    /**  @var iBlockSize Block size for AES*/
-    int iBlockSize = 16;
     /**  @var iNumBlocks Integer for the number of blocks*/
-    int iNumBlocks=iDataSize/iBlockSize;
+    int iNumBlocks=iDataSize/BLOCKSIZE;
     /**  @var  rgiIn Integer array for the input vector*/
-    int rgiIn[iBlockSize];
+    int rgiIn[BLOCKSIZE];
     /**  @var  rgiOut Integer array for the output vector*/
-    int rgiOut[iBlockSize];
+    int rgiOut[BLOCKSIZE];
     /**  @var  rgiLastIn Integer array for the last input vector*/
-    int rgiLastIn[iBlockSize];
+    int rgiLastIn[BLOCKSIZE];
     /**
-      *  @var iNb The number of columns comprising the
-      *       State. This is defined by the size of
-      *       the key.
       *  @var iNr The number of rounds. This is
       *       determined by the size of the key.
       *  @var iNk the number of words in the key.
       */
-    int iNb=4,iNr,iNk;
+    int iNr,iNk;
     switch(iKeySize){
         case 16:
             iNr = 10;
@@ -138,35 +129,36 @@ int *DecCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * 
             iNk = 8;
             break;
         default:
+            return NULL;
             break;
     }
     /**  @var rgrgiKeySchedule 2-D integer array for storing Key Schedule*/
-    int rgrgiKeySchedule[iNb*(iNr+1)][4];
-    KeyExpansion(iNb,iNr,iNk,rgiKey,rgrgiKeySchedule);
+    int rgrgiKeySchedule[NB*(iNr+1)][4];
+    KeyExpansion(iNr,iNk,rgiKey,rgrgiKeySchedule);
 
     /**  @var Pointer to integer array for storing Decrypted Data*/
     int *piData = malloc((iDataSize+1)*sizeof(int));
 
     for(int iOutIterator = 0;iOutIterator<iNumBlocks;iOutIterator++){
-        for(int iInIterator0 = 0;iInIterator0<iBlockSize;iInIterator0++){
-            rgiIn[iInIterator0]=piEncData[(iOutIterator*iBlockSize)+iInIterator0];
+        for(int iInIterator0 = 0;iInIterator0<BLOCKSIZE;iInIterator0++){
+            rgiIn[iInIterator0]=piEncData[(iOutIterator*BLOCKSIZE)+iInIterator0];
         }
-        InvCipher(iNb,iNr,rgiIn,rgiOut,rgrgiKeySchedule);
+        InvCipher(iNr,rgiIn,rgiOut,rgrgiKeySchedule);
         
         if(iOutIterator==0){
-            XorVector(iBlockSize,rgiOut,rgiIv);
-            for(int iInIterator1=0;iInIterator1<iBlockSize;iInIterator1++){
+            XorVector(BLOCKSIZE,rgiOut,rgiIv);
+            for(int iInIterator1=0;iInIterator1<BLOCKSIZE;iInIterator1++){
                 rgiLastIn[iInIterator1]=rgiIn[iInIterator1];
             }
         }else{
-            XorVector(iBlockSize,rgiOut,rgiLastIn);
-            for(int iInIterator2=0;iInIterator2<iBlockSize;iInIterator2++){
+            XorVector(BLOCKSIZE,rgiOut,rgiLastIn);
+            for(int iInIterator2=0;iInIterator2<BLOCKSIZE;iInIterator2++){
                 rgiLastIn[iInIterator2]=rgiIn[iInIterator2];
             }
         }
 
-        for(int iInIterator3 = 0;iInIterator3<iBlockSize;iInIterator3++){
-            piData[(iOutIterator*iBlockSize)+iInIterator3+1]=rgiOut[iInIterator3];
+        for(int iInIterator3 = 0;iInIterator3<BLOCKSIZE;iInIterator3++){
+            piData[(iOutIterator*BLOCKSIZE)+iInIterator3+1]=rgiOut[iInIterator3];
         }
     }
     /**PrintData(iDataSize,0,piData);
@@ -193,7 +185,8 @@ int *Enc(int iMode,int iKeySize,int iDataSize, int rgiIv[16],int rgiKey[iKeySize
             retVal = EncCBC(iKeySize,iDataSize,rgiIv,rgiKey,piData);
             break;
         default:
-	    break;
+            return NULL;
+            break;
     }
     return retVal;
 }
@@ -205,9 +198,9 @@ int *Dec(int iMode,int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize]
     switch(iMode){
         case 0:
             retVal = DecCBC(iKeySize,iDataSize,rgiIv,rgiKey,piEncData);
-            printf("Outside Size: %d\n",iDataSize);
             break;
         default:
+            return NULL;
             break;
     }
     return retVal;
