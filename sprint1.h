@@ -213,7 +213,7 @@ void Cipher(int iNr,unsigned char *puchIn,unsigned char *puchOut,unsigned char r
   *  an integer array pointed to by piTemp. These
   *  values are then stored back into rgrgiState.
   */
-void InvShiftRows(int rgrgiState[4][NB]);
+void InvShiftRows(unsigned char rgrguchState[4][NB]);
 /**
   *  @brief Performs a byte substitution based on
   *         InvSbox defined in FIPS 197
@@ -224,7 +224,7 @@ void InvShiftRows(int rgrgiState[4][NB]);
   *  the for loops, each byte represented as 0xXY is
   *  substituted with InvSbox[X][Y]
   */  
-void InvSubBytes(int rgrgiState[4][NB]);
+void InvSubBytes(unsigned char rgrguchState[4][NB]);
 /**
   *  @brief Performs a manipulation of each column
   *  
@@ -242,7 +242,7 @@ void InvSubBytes(int rgrgiState[4][NB]);
   *  The result of the manipulation is stored back in
   *  rgrgiState
   */
-void InvMixColumns(int rgrgiState[4][NB]);
+void InvMixColumns(unsigned char rgrguchState[4][NB]);
 /**
   *  @brief Function to perform AES decryption
   *
@@ -272,7 +272,10 @@ void InvMixColumns(int rgrgiState[4][NB]);
   *  5. Perform AddRoundKey operation on round 0.
   *  6. Copy contetnst from rgrgiState to piOut.
   */
-void InvCipher(int iNr,int * piIn,int * piOut,int rgrgiKeySchedule[NB*(iNr+1)][4]);
+void InvCipher(int iNr,
+               unsigned char *puchIn,
+               unsigned char *puchOut,
+               unsigned char rgrguchKeySchedule[NB*(iNr+1)][4]);
 /**
   *  @brief Simple function to to print an integer array
   *

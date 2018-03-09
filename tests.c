@@ -319,7 +319,111 @@ void testCipher(){
     PrintState(state);
     
 }
+void testInvShiftRows(){
+    unsigned char arr[] = {0x01,0x02,0x03,0x04,
+	                   0x05,0x06,0x07,0x08,
+                           0x09,0x0a,0x0b,0x0c,
+                           0x0d,0x0e,0x0f,0x10};
+    unsigned char state[4][NB] = {{0,0,0,0},
+                                  {0,0,0,0},
+                                  {0,0,0,0},
+                                  {0,0,0,0}};
+    InToState(arr, state);
+    printf("Original:\n");
+    PrintState(state);
+    InvShiftRows(state);
+    printf("Shifted:\n");
+    PrintState(state);
+}
     
+void testInvSubState(){
+    unsigned char rgrguchState[4][NB] = {{0x3d,0x3d,0x3d,0x3d},
+                                         {0x3d,0x3d,0x3d,0x3d},
+                                         {0x3d,0x3d,0x3d,0x3d},
+                                         {0x3d,0x3d,0x3d,0x3d}};
+    InvSubBytes(rgrguchState);
+    PrintState(rgrguchState);
+}
+void testInvCipher(){
+
+    unsigned char rguchKey[16] = {0x00,0x01,0x02,0x03,
+                                  0x04,0x05,0x06,0x07,
+                                  0x08,0x09,0x0a,0x0b,
+                                  0x0c,0x0d,0x0e,0x0f};
+    unsigned char rgrguchKeySchedule[44][4] = {{0,0,0,0},
+                                               {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0},
+					       {0,0,0,0}};
+    KeyExpansion(10,4,rguchKey,rgrguchKeySchedule);
+    unsigned char inputArray[] = {0x00, 0x11, 0x22, 0x33,
+                                  0x44, 0x55, 0x66, 0x77,
+                                  0x88, 0x99, 0xaa, 0xbb,
+                                  0xcc, 0xdd, 0xee, 0xff};
+    unsigned char encArray[16] = {0,0,0,0,0,0,0,0,
+                                  0,0,0,0,0,0,0,0}; 
+    unsigned char outputArray[16] = {0,0,0,0,0,0,0,0,
+                                     0,0,0,0,0,0,0,0}; 
+    unsigned char state[4][NB] = {{0,0,0,0},
+                                  {0,0,0,0},
+                                  {0,0,0,0},
+                                  {0,0,0,0}};
+    InToState(inputArray, state);
+    printf("Original:\n");
+    //PrintState(state);
+    PrintData(16,0,inputArray);
+
+    Cipher(10,inputArray,encArray,rgrguchKeySchedule);
+    InToState(outputArray, state);
+    printf("After Cipher:\n");
+    //PrintState(state);
+    PrintData(16,0,encArray);
+    
+    InvCipher(10, encArray, outputArray, rgrguchKeySchedule);
+    printf("After Cipher:\n");
+    //PrintState(state);
+    PrintData(16,0,outputArray);
+}
+
 int main(void){
     printf("%d",INT_MIN);
     //testNullEnc();
@@ -336,5 +440,8 @@ int main(void){
     testShiftRows();
     testMixColumns();
     testCipher();
+    testInvShiftRows();
+    testInvSubState();
+    testInvCipher();
     return 0;
 }

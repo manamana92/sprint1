@@ -157,33 +157,33 @@ void Cipher(int iNr,
 
     StateToOut(rgrguchState,puchOut);
 }
-/**Inverse Cipher Functions*
-void InvShiftRows(int rgrgiState[4][NB]){
-    **  @var piTemp Pointer to integer array for storing the
-      *       shifted version of the row*
-    int *piTemp=(int *)malloc(NB*sizeof(int));
+/**Inverse Cipher Functions*/
+void InvShiftRows(unsigned char rgrguchState[4][NB]){
+    /**  @var piTemp Pointer to integer array for storing the
+      *       shifted version of the row*/
+    unsigned char *puchTemp=(unsigned char *)malloc(NB);
     for(int iOutIterator = 1;iOutIterator<4;iOutIterator++){
         for(int iInIterator0 = 0;iInIterator0<NB;iInIterator0++){
-            piTemp[(iInIterator0+iOutIterator)%NB]=rgrgiState[iOutIterator][iInIterator0];
+            puchTemp[(iInIterator0+iOutIterator)%NB]=rgrguchState[iOutIterator][iInIterator0];
 	}
 	    for(int iInIterator1 = 0;iInIterator1<NB;iInIterator1++){
-            rgrgiState[iOutIterator][iInIterator1]=piTemp[iInIterator1];
+            rgrguchState[iOutIterator][iInIterator1]=puchTemp[iInIterator1];
         }
     }
-    free(piTemp);
+    free(puchTemp);
 }
-void InvSubBytes(int rgrgiState[4][NB]){
-    **
+void InvSubBytes(unsigned char rgrguchState[4][NB]){
+    /**
       *  An integer represented as 0xXY is substituted with
       *  InvSbox[X][Y]
       *  @var iX Integer for representing left nibble for use
       *       as described above
       *  @var iY Integer for representing right nibble for use
       *       as described above
-      *
-    int iX,iY;
-    **  @var rgrgiInvSbox 2-D integer array as defined in FIPS 197*
-    int rgrgiInvSbox[16][16]={{0x52,0x09,0x6a,0xd5,0x30,0x36,0xa5,0x38,0xbf,0x40
+      */
+    unsigned char uchX,uchY;
+    /**  @var rgrgiInvSbox 2-D integer array as defined in FIPS 197*/
+    unsigned char rgrguchInvSbox[16][16]={{0x52,0x09,0x6a,0xd5,0x30,0x36,0xa5,0x38,0xbf,0x40
         ,0xa3,0x9e,0x81,0xf3,0xd7,0xfb},{0x7c,0xe3,0x39,0x82,0x9b,0x2f,0xff,0x87
         ,0x34,0x8e,0x43,0x44,0xc4,0xde,0xe9,0xcb},{0x54,0x7b,0x94,0x32,0xa6,0xc2
         ,0x23,0x3d,0xee,0x4c,0x95,0x0b,0x42,0xfa,0xc3,0x4e},{0x08,0x2e,0xa1,0x66
@@ -204,63 +204,63 @@ void InvSubBytes(int rgrgiState[4][NB]){
         0x69,0x14,0x63,0x55,0x21,0x0c,0x7d}};
     for(int iOutIterator = 0;iOutIterator<4;iOutIterator++){
         for(int iInIterator = 0;iInIterator<NB;iInIterator++){
-            iY=rgrgiState[iOutIterator][iInIterator]&0x0f;
-            iX=rgrgiState[iOutIterator][iInIterator]>>4;
-            rgrgiState[iOutIterator][iInIterator]=rgrgiInvSbox[iX][iY];
+            uchY=rgrguchState[iOutIterator][iInIterator]&0x0f;
+            uchX=rgrguchState[iOutIterator][iInIterator]>>4;
+            rgrguchState[iOutIterator][iInIterator]=rgrguchInvSbox[uchX][uchY];
         }
     }
 }
-void InvMixColumns(int rgrgiState[4][NB]){
-    **  @var rgrgiOldState 2-D Integer array for storing old State*
-    int rgrgiOldState[4][NB];
+void InvMixColumns(unsigned char rgrguchState[4][NB]){
+    /**  @var rgrguchOldState 2-D Integer array for storing old State*/
+    unsigned char rgrguchOldState[4][NB];
     for(int iOutIterator = 0;iOutIterator<NB;iOutIterator++){
         for(int iInIterator = 0;iInIterator<4;iInIterator++){
-            rgrgiOldState[iInIterator][iOutIterator]=rgrgiState[iInIterator][iOutIterator];
+            rgrguchOldState[iInIterator][iOutIterator]=rgrguchState[iInIterator][iOutIterator];
         }
     }
     for(int iIterator =0;iIterator<NB;iIterator++){
-        rgrgiState[0][iIterator]=Mult(0x0e,rgrgiOldState[0][iIterator])^Mult(0x0b,rgrgiOldState[1][iIterator])^Mult(0x0d,rgrgiOldState[2][iIterator])^Mult(0x09,rgrgiOldState[3][iIterator]);
-        rgrgiState[1][iIterator]=Mult(0x09,rgrgiOldState[0][iIterator])^Mult(0x0e,rgrgiOldState[1][iIterator])^Mult(0x0b,rgrgiOldState[2][iIterator])^Mult(0x0d,rgrgiOldState[3][iIterator]);
-        rgrgiState[2][iIterator]=Mult(0x0d,rgrgiOldState[0][iIterator])^Mult(0x09,rgrgiOldState[1][iIterator])^Mult(0x0e,rgrgiOldState[2][iIterator])^Mult(0x0b,rgrgiOldState[3][iIterator]);
-        rgrgiState[3][iIterator]=Mult(0x0b,rgrgiOldState[0][iIterator])^Mult(0x0d,rgrgiOldState[1][iIterator])^Mult(0x09,rgrgiOldState[2][iIterator])^Mult(0x0e,rgrgiOldState[3][iIterator]);
+        rgrguchState[0][iIterator]=Mult(0x0e,rgrguchOldState[0][iIterator])^Mult(0x0b,rgrguchOldState[1][iIterator])^Mult(0x0d,rgrguchOldState[2][iIterator])^Mult(0x09,rgrguchOldState[3][iIterator]);
+        rgrguchState[1][iIterator]=Mult(0x09,rgrguchOldState[0][iIterator])^Mult(0x0e,rgrguchOldState[1][iIterator])^Mult(0x0b,rgrguchOldState[2][iIterator])^Mult(0x0d,rgrguchOldState[3][iIterator]);
+        rgrguchState[2][iIterator]=Mult(0x0d,rgrguchOldState[0][iIterator])^Mult(0x09,rgrguchOldState[1][iIterator])^Mult(0x0e,rgrguchOldState[2][iIterator])^Mult(0x0b,rgrguchOldState[3][iIterator]);
+        rgrguchState[3][iIterator]=Mult(0x0b,rgrguchOldState[0][iIterator])^Mult(0x0d,rgrguchOldState[1][iIterator])^Mult(0x09,rgrguchOldState[2][iIterator])^Mult(0x0e,rgrguchOldState[3][iIterator]);
     }
 }
-void InvCipher(int iNr,int * piIn,int * piOut,int rgrgiKeySchedule[NB*(iNr+1)][4]){
-    if(iNr!=10||iNr!=12||iNr!=14){
+void InvCipher(int iNr,unsigned char *puchIn,unsigned char *puchOut,unsigned char rgrguchKeySchedule[NB*(iNr+1)][4]){
+    if(iNr!=10&&iNr!=12&&iNr!=14){
         return;
     }
-    **  @var rgrgiState 2-D Integer array for storing State*
-    int rgrgiState[4][NB];
-    InToState(piIn,rgrgiState);
+    /**  @var rgrguchState 2-D Integer array for storing State*/
+    unsigned char rgrguchState[4][NB];
+    InToState(puchIn,rgrguchState);
 
-    AddRoundKey(iNr,iNr,rgrgiState,rgrgiKeySchedule);
+    AddRoundKey(iNr,iNr,rgrguchState,rgrguchKeySchedule);
 
     for(int round = iNr-1;round>0;round--){
-**        printf("Start Round %d\n",iNr-round);
-        PrintStateVector(NB,rgrgiState);*
-        InvShiftRows(rgrgiState);
-**        printf("After Shift Rows, Round %d\n",iNr-round);
-        PrintStateVector(NB,rgrgiState);*
-        InvSubBytes(rgrgiState);
-**        printf("After Sub Bytes, Round %d\n",iNr-round);
-        PrintStateVector(NB,rgrgiState);*
+/**        printf("Start Round %d\n",iNr-round);
+        PrintStateVector(NB,rgrguchState);*/
+        InvShiftRows(rgrguchState);
+/**        printf("After Shift Rows, Round %d\n",iNr-round);
+        PrintStateVector(NB,rgrguchState);*/
+        InvSubBytes(rgrguchState);
+/**        printf("After Sub Bytes, Round %d\n",iNr-round);
+        PrintStateVector(NB,rgrguchState);*/
 
-        AddRoundKey(iNr,round,rgrgiState,rgrgiKeySchedule);
-**        printf("After Add Round, Round %d\n",iNr-round);
-        PrintStateVector(NB,rgrgiState);*
-        InvMixColumns(rgrgiState);
+        AddRoundKey(iNr,round,rgrguchState,rgrguchKeySchedule);
+/**        printf("After Add Round, Round %d\n",iNr-round);
+        PrintStateVector(NB,rgrguchState);*/
+        InvMixColumns(rgrguchState);
     }
 
-    InvShiftRows(rgrgiState);
-**    printf("After Shift Rows, Round %d\n",iNr);
-    PrintStateVector(NB,rgrgiState);*
-    InvSubBytes(rgrgiState);
-**    printf("After Sub Bytes, Round %d\n",iNr);
-    PrintStateVector(NB,rgrgiState);*
-    AddRoundKey(iNr,0,rgrgiState,rgrgiKeySchedule);
+    InvShiftRows(rgrguchState);
+/**    printf("After Shift Rows, Round %d\n",iNr);
+    PrintStateVector(NB,rgrguchState);*/
+    InvSubBytes(rgrguchState);
+/**    printf("After Sub Bytes, Round %d\n",iNr);
+    PrintStateVector(NB,rgrguchState);*/
+    AddRoundKey(iNr,0,rgrguchState,rgrguchKeySchedule);
 
-    StateToOut(rgrgiState,piOut);
-}*/
+    StateToOut(rgrguchState,puchOut);
+}
 
 /**int main(void){
     int mainNb = 4;
