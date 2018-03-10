@@ -1,13 +1,18 @@
 #include "sprint1.h"
-void RotWord(int rgiW[4]){
-    /**  @var iBuff Integer for use when swapping values for rotation*/
-    int iBuff=rgiW[0];
-    for(int iIterator =1;iIterator<4;iIterator++){
-        rgiW[iIterator-1]=rgiW[iIterator];
+void PrintData(int iSize,int iOffset,unsigned char * puchData){
+    for(int iIterator = 0;iIterator<iSize;iIterator++){
+        printf("%02x ",puchData[iOffset+iIterator]);
     }
-    rgiW[3]=iBuff;
+    printf("\n");
 }
-int SubByte(int iByte){
+
+void RotWord(unsigned char rguchW[4]){
+    /**  @var iBuff Integer for use when swapping values for rotation*/
+    unsigned char uchBuff=rguchW[0];
+    memcpy(rguchW, rguchW + 1, 3);
+    rguchW[3]=uchBuff;
+}
+unsigned char SubByte(unsigned char uchByte){
     /**
       *  An integer represented as 0xXY is substituted with
       *  Sbox[X][Y]
@@ -16,9 +21,9 @@ int SubByte(int iByte){
       *  @var iY Integer for representing right nibble for use
       *       as described above
       */
-    int iX,iY;
+    unsigned char uchX,uchY;
     /**  @var rgrgiSbox 2-D integer array as defined in FIPS 197*/
-    int rgrgiSbox[16][16]={{0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,
+    unsigned char rgrguchSbox[16][16]={{0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,
         0x67,0x2b,0xfe,0xd7,0xab,0x76},{0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,
         0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0},{0xb7,0xfd,0x93,0x26,
         0x36,0x3f,0xf7,0xcc,0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15},{0x04,
@@ -38,60 +43,63 @@ int SubByte(int iByte){
         0xc1,0x1d,0x9e},{0xe1,0xf8,0x98,0x11,0x69,0xd9,0x8e,0x94,0x9b,0x1e,
         0x87,0xe9,0xce,0x55,0x28,0xdf},{0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,
         0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16}};
-    iY = iByte&0x0f;
-    iX = (iByte&0xff)>>4;
-    iByte=rgrgiSbox[iX][iY];
-    return iByte; 
+    uchY = uchByte&0x0f;
+    uchX = (uchByte&0xff)>>4;
+    uchByte=rgrguchSbox[uchX][uchY];
+    return uchByte; 
 }
-void SubWord(int rgiW[4]){
+void SubWord(unsigned char rguchW[4]){
     for(int iIterator = 0;iIterator<4;iIterator++){
-        rgiW[iIterator] = SubByte(rgiW[iIterator]);
+        rguchW[iIterator] = SubByte(rguchW[iIterator]);
     }
 }
-void KeyExpansion(int iNr, int iNk,int rgiKey[iNk*4], int rgrgiKeySchedule[NB*(iNr+1)][4]){
-    if(iNr!=10||iNr!=12||iNr!=14||iNk!=4||iNk!=6||iNk!=8){
+void KeyExpansion(int iNr,
+                  int iNk,
+                  unsigned char rguchKey[iNk*4],
+                  unsigned char rgrguchKeySchedule[NB*(iNr+1)][4]){
+    if(iNr!=10&&iNr!=12&&iNr!=14&&iNk!=4&&iNk!=6&&iNk!=8){
         return;
     }
-    /**  @var rgiTemp Integer array for storing a temporary word*/
-    int rgiTemp[4];
+    /**  @var rguchTemp Integer array for storing a temporary word*/
+    unsigned char rguchTemp[4];
     /**  @var iIterator Integer for iterating through the Key Schedule*/
     int iIterator=0;
     while(iIterator<iNk){
-        rgrgiKeySchedule[iIterator][0]=rgiKey[4*iIterator];
-        rgrgiKeySchedule[iIterator][1]=rgiKey[4*iIterator+1];
-        rgrgiKeySchedule[iIterator][2]=rgiKey[4*iIterator+2];
-        rgrgiKeySchedule[iIterator][3]=rgiKey[4*iIterator+3];
+        rgrguchKeySchedule[iIterator][0]=rguchKey[4*iIterator];
+        rgrguchKeySchedule[iIterator][1]=rguchKey[4*iIterator+1];
+        rgrguchKeySchedule[iIterator][2]=rguchKey[4*iIterator+2];
+        rgrguchKeySchedule[iIterator][3]=rguchKey[4*iIterator+3];
         iIterator++;
     }
     iIterator=iNk;
     /**  @var iRcon Integer for storing first value of RCON*/
-    int iRcon;
+    unsigned char uchRcon;
     while(iIterator<NB*(iNr+1)){
-        rgiTemp[0]=rgrgiKeySchedule[iIterator-1][0];
-        rgiTemp[1]=rgrgiKeySchedule[iIterator-1][1];
-        rgiTemp[2]=rgrgiKeySchedule[iIterator-1][2];
-        rgiTemp[3]=rgrgiKeySchedule[iIterator-1][3];
+        rguchTemp[0]=rgrguchKeySchedule[iIterator-1][0];
+        rguchTemp[1]=rgrguchKeySchedule[iIterator-1][1];
+        rguchTemp[2]=rgrguchKeySchedule[iIterator-1][2];
+        rguchTemp[3]=rgrguchKeySchedule[iIterator-1][3];
         if(iIterator%iNk==0){
-            RotWord(rgiTemp);
-            SubWord(rgiTemp);
-            iRcon = 1;
+            RotWord(rguchTemp);
+            SubWord(rguchTemp);
+            uchRcon = 1;
             for(int iInIterator = 0;iInIterator<((iIterator/iNk)-1);iInIterator++){
-                iRcon = Mult(iRcon,2);
-		/**iRcon = (iRcon<<1);
+                uchRcon = (unsigned char)Mult(uchRcon,2);
+		/**iRcon = (uchRcon<<1);
                 if(iRcon>0x00ff){
                     iRcon = iRcon ^ 0x011b;
                 }*/
             }               
             /**iRcon = (pow(2,((i/iNk)-1)));*/
-	    rgiTemp[0]=rgiTemp[0]^iRcon;
+	    rguchTemp[0]=rguchTemp[0]^uchRcon;
 
         }else if(iNk>6&&iIterator%iNk==4){
-            SubWord(rgiTemp);
+            SubWord(rguchTemp);
         }
-        rgrgiKeySchedule[iIterator][0]=rgrgiKeySchedule[iIterator-iNk][0]^rgiTemp[0];
-        rgrgiKeySchedule[iIterator][1]=rgrgiKeySchedule[iIterator-iNk][1]^rgiTemp[1];
-        rgrgiKeySchedule[iIterator][2]=rgrgiKeySchedule[iIterator-iNk][2]^rgiTemp[2];
-        rgrgiKeySchedule[iIterator][3]=rgrgiKeySchedule[iIterator-iNk][3]^rgiTemp[3];
+        rgrguchKeySchedule[iIterator][0]=rgrguchKeySchedule[iIterator-iNk][0]^rguchTemp[0];
+        rgrguchKeySchedule[iIterator][1]=rgrguchKeySchedule[iIterator-iNk][1]^rguchTemp[1];
+        rgrguchKeySchedule[iIterator][2]=rgrguchKeySchedule[iIterator-iNk][2]^rguchTemp[2];
+        rgrguchKeySchedule[iIterator][3]=rgrguchKeySchedule[iIterator-iNk][3]^rguchTemp[3];
 
         iIterator++;
     }

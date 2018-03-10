@@ -1,7 +1,7 @@
 #include "sprint1.h"
-void PrintData(int iSize,int iOffset,int * piData){
+void PrintData(int iSize,int iOffset,unsigned char *puchData){
     for(int iIterator = 0;iIterator<iSize;iIterator++){
-        printf("%02x ",piData[iOffset+iIterator]);
+        printf("%02x ",puchData[iOffset+iIterator]);
     }
     printf("\n");
 }
