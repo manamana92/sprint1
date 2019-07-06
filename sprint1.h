@@ -22,7 +22,7 @@
   * 
   *  @param rgiW the range to rotate by one
   */
-void RotWord(int rgiW[4]);
+void RotWord(unsigned char rguchW[4]);
 /**
   *  @brief Performs a byte substitution in Sbox
   *         as defined in FIPS 197
@@ -35,7 +35,7 @@ void RotWord(int rgiW[4]);
   *  @return The result of the substitute of iByte
   *          through the Sbox
   */
-int SubByte(int iByte);
+unsigned char SubByte(unsigned char uchByte);
 /**
   *  @brief Performs a SubByte() operation for each
   *         byte in a word rgiW
@@ -47,7 +47,7 @@ int SubByte(int iByte);
   *  @param rgiW the input word to run through
   *         byte substitution.
   */
-void SubWord(int rgiW[4]);
+void SubWord(unsigned char rguchW[4]);
 /**
   *  @brief Runs the Key Expansion defined in
   *         FIPS 197
@@ -78,7 +78,10 @@ void SubWord(int rgiW[4]);
   *  Next it stores rgrgiKeySchedule[round-iNk] xor
   *  rgiTemp in rgrgiKeySchedule[round].
   */
-void KeyExpansion(int iNr, int iNk,int rgiKey[iNk*4], int rgrgiKeySchedule[NB*(iNr+1)][4]);
+void KeyExpansion(int iNr,
+                  int iNk,
+                  unsigned char rguchKey[iNk * 4],
+                  unsigned char rgrguchKeySchedule[NB * (iNr + 1)][4]);
 /**
   *  @brief Stores a vector in a 2-D integer array
   *
@@ -86,7 +89,7 @@ void KeyExpansion(int iNr, int iNk,int rgiKey[iNk*4], int rgrgiKeySchedule[NB*(i
   *  @param rgrgiState The 2-D integer array to store
   *         the vector in.
   */
-void InToState(int * piIn,int rgrgiState[4][NB]);
+void InToState(unsigned char * puchIn, unsigned char rgrguchState[4][NB]);
 /**
   *  @brief Stores a 2-D integer array in a vector
   *
@@ -94,7 +97,7 @@ void InToState(int * piIn,int rgrgiState[4][NB]);
   *         the State.
   *  @param piOut The vector to store the 2-D array in
   */
-void StateToOut(int rgrgiState[4][NB],int * piOut);
+void StateToOut(unsigned char rgrguchState[4][NB], unsigned char *puchOut);
 /**
   *  @brief Add the round key from Key Schedule to State
   *
@@ -108,7 +111,10 @@ void StateToOut(int rgrgiState[4][NB],int * piOut);
   *  for loop it stores the xor operation of the State and the
   *  key schedule at offset round*NB.
   */
-void AddRoundKey(int iNr,int round,int rgrgiState[4][NB],int rgrgiKeySchedule[NB*(iNr+1)][4]);
+void AddRoundKey(int iNr,
+                 int round,
+                 unsigned char rgrguchState[4][NB],
+                 unsigned char rgrguchKeySchedule[NB * (iNr + 1)][4]);
 /**
   *  @brief Performs a SubByte operation for each value in the state.
   *  
@@ -118,7 +124,7 @@ void AddRoundKey(int iNr,int round,int rgrgiState[4][NB],int rgrgiKeySchedule[NB
   *  the for loop, the SubByte operation is performed, and
   *  the result is stored back in the rgrgiState
   */
-void SubState(int rgrgiState[4][NB]);
+void SubState(unsigned char rgrguchState[4][NB]);
 /**
   *  @brief Performs a row shift of a 2-D integer array
   *
@@ -128,7 +134,7 @@ void SubState(int rgrgiState[4][NB]);
   *  operation is performed the number of times based on
   *  the row number
   */
-void ShiftRows(int rgrgiState[4][NB]);
+void ShiftRows(unsigned char rgrguchState[4][NB]);
 /**
   *  @brief Performs a manipulation of each column
   *  
@@ -146,7 +152,7 @@ void ShiftRows(int rgrgiState[4][NB]);
   *  The result of the manipulation is stored back in
   *  rgrgiState
   */
-void MixColumns(int rgrgiState[4][NB]);
+void MixColumns(unsigned char rgrguchState[4][NB]);
 /**
   *  @brief Simple function to revers the order of
   *         an integer array
@@ -159,7 +165,7 @@ void MixColumns(int rgrgiState[4][NB]);
   *  to go through half of the array using an iterator
   *  and swap each value with the value at iSize-iterator.
   */
-void Reverse(int * piArr,int iSize);
+void Reverse(unsigned char * puchArr, int iSize);
 /**
   *  @brief Performs a multiplication in the finite field
   *
@@ -172,7 +178,7 @@ void Reverse(int * piArr,int iSize);
   *  multiplication operation and returns the value of
   *  the product.
   */
-int Mult(int iX,int iY);
+int Mult(unsigned char uchX, unsigned char uchY);
 /**
   *  @brief Function to perform AES encryption
   *
@@ -201,7 +207,10 @@ int Mult(int iX,int iY);
   *  5. Perform AddRoundKey operation on round iNr.
   *  6. Copy contetnst from rgrgiState to piOut.
   */
-void Cipher(int iNr,int * piIn,int * piOut,int rgrgiKeySchedule[NB*(iNr+1)][4]);
+void Cipher(int iNr,
+            unsigned char *puchIn,
+            unsigned char *puchOut,
+            unsigned char rgrguchKeySchedule[NB * (iNr + 1)][4]);
 /**
   *  @brief Perform row shift in opposite direction
   *         of ShiftRows operation.
@@ -213,7 +222,7 @@ void Cipher(int iNr,int * piIn,int * piOut,int rgrgiKeySchedule[NB*(iNr+1)][4]);
   *  an integer array pointed to by piTemp. These
   *  values are then stored back into rgrgiState.
   */
-void InvShiftRows(int rgrgiState[4][NB]);
+void InvShiftRows(unsigned char rgrguchState[4][NB]);
 /**
   *  @brief Performs a byte substitution based on
   *         InvSbox defined in FIPS 197
@@ -224,7 +233,7 @@ void InvShiftRows(int rgrgiState[4][NB]);
   *  the for loops, each byte represented as 0xXY is
   *  substituted with InvSbox[X][Y]
   */  
-void InvSubBytes(int rgrgiState[4][NB]);
+void InvSubBytes(unsigned char rgrguchState[4][NB]);
 /**
   *  @brief Performs a manipulation of each column
   *  
@@ -242,7 +251,7 @@ void InvSubBytes(int rgrgiState[4][NB]);
   *  The result of the manipulation is stored back in
   *  rgrgiState
   */
-void InvMixColumns(int rgrgiState[4][NB]);
+void InvMixColumns(unsigned char rgrguchState[4][NB]);
 /**
   *  @brief Function to perform AES decryption
   *
@@ -272,7 +281,10 @@ void InvMixColumns(int rgrgiState[4][NB]);
   *  5. Perform AddRoundKey operation on round 0.
   *  6. Copy contetnst from rgrgiState to piOut.
   */
-void InvCipher(int iNr,int * piIn,int * piOut,int rgrgiKeySchedule[NB*(iNr+1)][4]);
+void InvCipher(int iNr,
+               unsigned char *puchIn,
+               unsigned char *puchOut,
+               unsigned char rgrguchKeySchedule[NB * (iNr + 1)][4]);
 /**
   *  @brief Simple function to to print an integer array
   *
@@ -283,7 +295,7 @@ void InvCipher(int iNr,int * piIn,int * piOut,int rgrgiKeySchedule[NB*(iNr+1)][4
   *  This is acomplished by a simple for loop and printf
   *  of the hex representation.
   */
-void PrintData(int iSize,int iOffset,int * piData);
+void PrintData(int iSize, int iOffset, unsigned char *puchData);
 /**
   *  @brief Simple function to convert a char array
   *         to an integer array
@@ -296,7 +308,7 @@ void PrintData(int iSize,int iOffset,int * piData);
   *  both arrays and casting pchArr[iIterator] to int
   *  and storing in piBytes.
   */
-int CharToBytes(int iSize,char * pchArr,int * piBytes);
+int CharToBytes(int iSize, char *pchArr, int *piBytes);
 /**
   *  @brief Simple function to convert a integer array
   *         to an char array
@@ -311,7 +323,7 @@ int CharToBytes(int iSize,char * pchArr,int * piBytes);
   *  both arrays and casting pchArr[iIterator] to int
   *  and storing in piBytes.
   */
-int BytesToChar(int iSize,int * piBytes,char * pchArr,int iOffset);
+int BytesToChar(int iSize, int *piBytes, char *pchArr, int iOffset);
 /**
   *  @brief Simple function to fill the input integer array
   *         from a data vector
@@ -326,7 +338,7 @@ int BytesToChar(int iSize,int * piBytes,char * pchArr,int iOffset);
   *  This accomplished through a simple for loop and storing
   *  piData[iOffset+iIterator] in rgiIn[iIterator].
   */
-void FillIn(int iSize,int iOffset,int rgiIn[iSize],int * piData);
+void FillIn(int iSize, int iOffset, int rgiIn[iSize], int *piData);
 /**
   *  @brief Simple function to xor the values of two integer
   *         arrays
@@ -341,7 +353,9 @@ void FillIn(int iSize,int iOffset,int rgiIn[iSize],int * piData);
   *  the result of xor operation of rgiVectorPlain[iIterator]
   *  rgiVector[iIterator] in rgiVectorPlain[iIterator].
   */
-void XorVector(int iSize,int rgiVectorPlain[iSize],int rgiVector[iSize]);
+void XorVector(int iSize,
+               unsigned char rguchVectorPlain[iSize],
+               unsigned char rguchVector[iSize]);
 /**
   *  @brief Function to perform AES Encryption in CBC mode
   *         with ISO 7816-4 padding
@@ -377,7 +391,12 @@ void XorVector(int iSize,int rgiVectorPlain[iSize],int rgiVector[iSize]);
   *  Finally the size of the encrypted data is stored at
   *  piEncData[0]. Then piData is freed and piEncData is returned.
   */
-int *EncCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * piData);
+int EncCBC(unsigned char rguchIv[16],
+           int iKeySize,
+           unsigned char rguchKey[iKeySize],
+           int iDataSize,
+           unsigned char *puchData,
+           unsigned char **puchEncData);
 /**
   *  @brief Function to perform AES Encryption
   *
@@ -397,7 +416,13 @@ int *EncCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * 
   *  and then uses the appropriate encryption function. Then it
   *  returns the pointer returned by the encryption function.
   */
-int *Enc(int iMode,int iKeySize,int iDataSize, int rgiIv[16],int rgiKey[iKeySize],int * piData);
+int Enc(int iMode,
+        unsigned char rguchIv[16],
+        int iKeySize,
+        unsigned char rguchKey[iKeySize],
+        int iDataSize,
+        unsigned char *puchData,
+        unsigned char **puchEncData);
 /**
   *  @brief Function to perform AES Decryption in CBC mode
   *         with ISO 7816-4 padding
@@ -435,7 +460,12 @@ int *Enc(int iMode,int iKeySize,int iDataSize, int rgiIv[16],int rgiKey[iKeySize
   *  data stripped of padding is stored in piData, and piEncData
   *  is freed.
   */
-int *DecCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * piEncData);
+int DecCBC(unsigned char rguchIv[16],
+           int iKeySize,
+           unsigned char rguchKey[iKeySize],
+           int iDataSize,
+           unsigned char *puchEncData,
+           unsigned char **puchDecData);
 /**
   *  @brief Function to perform AES Decryption
   *
@@ -455,4 +485,10 @@ int *DecCBC(int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * 
   *  and then uses the appropriate decryption function. Then it
   *  returns the pointer returned by the decryption function.
   */
-int *Dec(int iMode,int iKeySize,int iDataSize,int rgiIv[16],int rgiKey[iKeySize],int * piEncData);
+int Dec(int iMode,
+        unsigned char rguchIv[16],
+        int iKeySize,
+        unsigned char rguchKey[iKeySize],
+        int iDataSize,
+        unsigned char *puchEncData,
+        unsigned char **puchDecData);
